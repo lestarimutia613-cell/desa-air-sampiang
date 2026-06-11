@@ -20,6 +20,17 @@ model User {
   orders    Order[]
 }
 
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      String   @default("ADMIN")
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Product {
   id          String   @id @default(cuid())
   name        String
@@ -35,20 +46,21 @@ model Product {
 }
 
 model Order {
-  id            String      @id @default(cuid())
-  userId        String
-  user          User        @relation(fields: [userId], references: [id])
-  totalAmount   Float
-  status        String      @default("PENDING")
-  paymentMethod String
-  paymentProof  String?
-  buyerPhone    String
-  buyerName     String
-  bankAccount   String?
-  bankName      String?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  items         OrderItem[]
+  id              String        @id @default(cuid())
+  invoiceNumber   String        @unique
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  totalAmount     Float
+  status          String        @default("PENDING")
+  paymentMethod   String
+  buyerPhone      String
+  buyerName       String
+  bankAccount     String?
+  bankName        String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  items           OrderItem[]
+  paymentProofs   PaymentProof[]
 }
 
 model OrderItem {
@@ -59,6 +71,23 @@ model OrderItem {
   product   Product @relation(fields: [productId], references: [id])
   quantity  Int
   price     Float
+}
+
+model PaymentProof {
+  id              String   @id @default(cuid())
+  orderId         String
+  order           Order    @relation(fields: [orderId], references: [id])
+  invoiceNumber   String
+  buyerName       String
+  buyerPhone      String
+  totalAmount     Float
+  paymentMethod   String
+  items           String
+  status          String   @default("PENDING")
+  sentToWhatsApp  Boolean  @default(false)
+  printed         Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model News {

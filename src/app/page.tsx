@@ -5,6 +5,7 @@ import { useAppStore } from '@/lib/store';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import AiChatBot from '@/components/chat/AiChatBot';
+import FloatingWhatsApp from '@/components/layout/FloatingWhatsApp';
 import BerandaPage from '@/components/pages/BerandaPage';
 import LayananDesaPage from '@/components/pages/LayananDesaPage';
 import MarketplacePage from '@/components/pages/MarketplacePage';
@@ -16,6 +17,7 @@ import BeritaPage from '@/components/pages/BeritaPage';
 import LoginPage from '@/components/pages/LoginPage';
 import PaymentPage from '@/components/pages/PaymentPage';
 import AdminPage from '@/components/pages/AdminPage';
+import AdminLoginPage from '@/components/pages/AdminLoginPage';
 import OrderHistoryPage from '@/components/pages/OrderHistoryPage';
 import { MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -33,11 +35,12 @@ const pageMap: Record<string, React.ComponentType> = {
   'register': LoginPage,
   'payment': PaymentPage,
   'admin': AdminPage,
+  'admin-login': AdminLoginPage,
   'order-history': OrderHistoryPage,
 };
 
 export default function Home() {
-  const { currentPage, chatOpen, setChatOpen, setUser } = useAppStore();
+  const { currentPage, chatOpen, setChatOpen, setUser, setAdmin } = useAppStore();
 
   // Restore user from localStorage
   useEffect(() => {
@@ -47,15 +50,27 @@ export default function Home() {
         setUser(JSON.parse(savedUser));
       } catch {}
     }
-  }, [setUser]);
+    const savedAdmin = localStorage.getItem('desa_admin');
+    if (savedAdmin) {
+      try {
+        setAdmin(JSON.parse(savedAdmin));
+      } catch {}
+    }
+  }, [setUser, setAdmin]);
 
-  // Save user to localStorage on change
+  // Save user/admin to localStorage on change
   useEffect(() => {
     const user = useAppStore.getState().user;
     if (user) {
       localStorage.setItem('desa_user', JSON.stringify(user));
     } else {
       localStorage.removeItem('desa_user');
+    }
+    const admin = useAppStore.getState().admin;
+    if (admin) {
+      localStorage.setItem('desa_admin', JSON.stringify(admin));
+    } else {
+      localStorage.removeItem('desa_admin');
     }
   });
 
@@ -69,6 +84,7 @@ export default function Home() {
       </main>
       <Footer />
       <AiChatBot />
+      <FloatingWhatsApp />
       
       {/* Floating Chat Button */}
       {!chatOpen && (

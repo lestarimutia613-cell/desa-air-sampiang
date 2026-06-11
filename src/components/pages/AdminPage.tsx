@@ -42,37 +42,45 @@ interface Order {
 }
 
 export default function AdminPage() {
-  const { user } = useAppStore();
+  const { admin, setAdmin, setCurrentPage } = useAppStore();
   const [stats, setStats] = useState<any>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
-    if (user?.role !== 'ADMIN') return;
+    if (!admin) return;
     Promise.all([
       fetch('/api/admin').then((r) => r.json()),
-      fetch('/api/orders').then((r) => r.json()),
+      fetch('/api/orders?admin=true').then((r) => r.json()),
     ]).then(([s, o]) => {
       setStats(s);
       setOrders(o);
       setLoading(false);
     }).catch(() => setLoading(false));
-  }, [user]);
+  }, [admin]);
 
-  if (user?.role !== 'ADMIN') {
+  if (!admin) {
     return (
       <div className="py-12 min-h-[60vh] flex items-center justify-center">
         <Card className="max-w-md">
           <CardContent className="p-6 text-center">
             <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
             <h2 className="font-bold text-gray-900 mb-2">Akses Ditolak</h2>
-            <p className="text-gray-600 text-sm">Halaman ini hanya dapat diakses oleh administrator desa</p>
+            <p className="text-gray-600 text-sm mb-4">Silakan login sebagai admin terlebih dahulu</p>
+            <Button onClick={() => setCurrentPage('admin-login')} className="bg-orange-600 hover:bg-orange-700">
+              Login Admin
+            </Button>
           </CardContent>
         </Card>
       </div>
     );
   }
+
+  const handleAdminLogout = () => {
+    setAdmin(null);
+    setCurrentPage('beranda');
+  };
 
   const formatPrice = (price: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
 
@@ -110,8 +118,11 @@ export default function AdminPage() {
           <div>
             <Badge className="bg-orange-100 text-orange-800 mb-2">Panel Admin</Badge>
             <h1 className="text-3xl font-bold text-emerald-900">Dashboard Admin Desa</h1>
-            <p className="text-gray-600">Kelola layanan, pesanan, dan konten website desa</p>
+            <p className="text-gray-600">Selamat datang, {admin.name} • Kelola layanan, pesanan, dan konten website desa</p>
           </div>
+          <Button variant="outline" onClick={handleAdminLogout} className="text-red-600 hover:bg-red-50 border-red-200">
+            <AlertCircle className="h-4 w-4 mr-1" /> Keluar Admin
+          </Button>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>

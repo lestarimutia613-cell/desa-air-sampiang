@@ -4,11 +4,11 @@ import { createHash } from 'crypto';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create admin user
+  // Create admin user (separate Admin table)
   const adminPassword = 'admin123';
   const hashedAdminPw = createHash('sha256').update(adminPassword).digest('hex');
   
-  await prisma.user.upsert({
+  await prisma.admin.upsert({
     where: { email: 'admin@desaairsempiang.id' },
     update: {},
     create: {
@@ -17,11 +17,10 @@ async function main() {
       password: hashedAdminPw,
       role: 'ADMIN',
       phone: '085150859735',
-      address: 'Kantor Desa Air Sempiang, Kec. Kabawetan, Kab. Kepahiang, Prov. Bengkulu',
     },
   });
 
-  // Create demo user
+  // Create demo user (regular user only)
   const userPassword = 'user123';
   const hashedUserPw = createHash('sha256').update(userPassword).digest('hex');
   

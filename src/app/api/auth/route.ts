@@ -9,9 +9,7 @@ export async function POST(request: NextRequest) {
 
     if (action === 'login') {
       const hashedPassword = createHash('sha256').update(password).digest('hex');
-      const user = await db.user.findUnique({
-        where: { email },
-      });
+      const user = await db.user.findUnique({ where: { email } });
 
       if (!user || user.password !== hashedPassword) {
         return NextResponse.json({ error: 'Email atau password salah' }, { status: 401 });
@@ -52,6 +50,23 @@ export async function POST(request: NextRequest) {
         role: user.role,
         phone: user.phone,
         address: user.address,
+      });
+    }
+
+    if (action === 'admin-login') {
+      const hashedPassword = createHash('sha256').update(password).digest('hex');
+      const admin = await db.admin.findUnique({ where: { email } });
+
+      if (!admin || admin.password !== hashedPassword) {
+        return NextResponse.json({ error: 'Email atau password admin salah' }, { status: 401 });
+      }
+
+      return NextResponse.json({
+        id: admin.id,
+        email: admin.email,
+        name: admin.name,
+        role: 'ADMIN',
+        phone: admin.phone,
       });
     }
 

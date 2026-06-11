@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   CreditCard,
   Smartphone,
@@ -78,6 +77,7 @@ export default function PaymentPage() {
             productId: item.productId,
             quantity: item.quantity,
             price: item.price,
+            name: item.name,
           })),
           paymentMethod,
           buyerName,
@@ -102,6 +102,44 @@ export default function PaymentPage() {
     }
   };
 
+  // Generate WhatsApp message text
+  const generateWhatsAppMessage = () => {
+    if (!orderResult) return '';
+    const items = pendingOrder.items.map((item) => `• ${item.name} x${item.quantity} = ${formatPrice(item.price * item.quantity)}`).join('\n');
+    const date = new Date(orderResult.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    const time = new Date(orderResult.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+    return `🛒 *BUKTI TRANSAKSI*
+*Desa Air Sempiang Digital*
+━━━━━━━━━━━━━━━━━━
+
+Dear ${buyerName},
+
+Terima kasih sudah berbelanja di *Marketplace Desa Air Sempiang* 🎉
+
+📋 *Detail Pesanan:*
+No. Invoice: *${orderResult.invoiceNumber}*
+Tanggal: ${date}, ${time} WIB
+
+📦 *Item Pesanan:*
+${items}
+
+━━━━━━━━━━━━━━━━━━
+💰 *Total Pembayaran: ${formatPrice(pendingOrder.total)}*
+
+💳 *Metode Pembayaran:*
+${selectedPayment?.label}
+${selectedPayment?.detail}
+
+📌 *Status: MENUNGGU PEMBAYARAN*
+
+Mohon lakukan pembayaran sesuai metode di atas, lalu kirim bukti pembayaran ke nomor ini.
+
+Salam hormat,
+*Marketplace Desa Air Sempiang*
+Kec. Kabawetan, Kab. Kepahiang, Bengkulu`;
+  };
+
   const handlePrint = () => {
     const printContent = document.getElementById('receipt-content');
     if (!printContent) return;
@@ -110,17 +148,17 @@ export default function PaymentPage() {
     printWindow.document.write(`
       <html><head><title>Bukti Transaksi - Desa Air Sempiang</title>
       <style>
-        body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
-        .header { text-align: center; border-bottom: 2px solid #065f46; padding-bottom: 10px; margin-bottom: 20px; }
-        .header h1 { color: #065f46; margin: 0; font-size: 18px; }
-        .header p { margin: 4px 0; font-size: 12px; color: #666; }
-        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-        th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; font-size: 13px; }
-        th { background: #f0fdf4; color: #065f46; }
-        .total { text-align: right; font-size: 16px; font-weight: bold; color: #065f46; margin: 15px 0; }
-        .info { margin: 10px 0; font-size: 13px; }
-        .info strong { color: #065f46; }
-        .footer { margin-top: 30px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #eee; padding-top: 10px; }
+        body { font-family: 'Courier New', monospace; padding: 20px; color: #333; max-width: 400px; margin: 0 auto; }
+        .header { text-align: center; border-bottom: 2px dashed #065f46; padding-bottom: 12px; margin-bottom: 16px; }
+        .header h1 { color: #065f46; margin: 0; font-size: 16px; }
+        .header p { margin: 4px 0; font-size: 11px; color: #666; }
+        .row { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; }
+        .row-bold { font-weight: bold; font-size: 14px; }
+        .separator { border-top: 1px dashed #ccc; margin: 8px 0; }
+        .title { font-weight: bold; font-size: 13px; color: #065f46; margin: 8px 0 4px; }
+        .item { font-size: 12px; padding: 2px 0; }
+        .footer { margin-top: 16px; text-align: center; font-size: 10px; color: #999; border-top: 1px dashed #ccc; padding-top: 8px; }
+        .badge { display: inline-block; background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
       </style></head><body>
       ${printContent.innerHTML}
       </body></html>
@@ -129,106 +167,147 @@ export default function PaymentPage() {
     printWindow.print();
   };
 
+  const handleSendWhatsApp = () => {
+    const message = generateWhatsAppMessage();
+    const url = `https://wa.me/${buyerPhone}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+  };
+
   // Order Success View
   if (orderResult) {
+    const date = new Date(orderResult.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    const time = new Date(orderResult.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
     return (
       <div className="py-12">
-        <div className="max-w-2xl mx-auto px-4">
-          <div className="text-center mb-8">
-            <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-emerald-900">Pesanan Berhasil Dibuat!</h1>
-            <p className="text-gray-600 mt-2">Silakan lakukan pembayaran sesuai metode yang dipilih</p>
+        <div className="max-w-lg mx-auto px-4">
+          <div className="text-center mb-6">
+            <CheckCircle2 className="h-14 w-14 text-green-500 mx-auto mb-3" />
+            <h1 className="text-2xl font-bold text-emerald-900">Pesanan Berhasil!</h1>
+            <p className="text-gray-500 text-sm mt-1">Silakan lakukan pembayaran sesuai metode yang dipilih</p>
           </div>
 
+          {/* WhatsApp-style Receipt */}
           <div id="receipt-content">
-            <Card className="border-emerald-200">
-              <CardHeader className="bg-emerald-50">
-                <CardTitle className="text-emerald-800 text-center">
-                  <Receipt className="h-5 w-5 inline mr-2" />
-                  Bukti Transaksi
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 space-y-4">
-                <div className="text-center border-b pb-4">
-                  <h2 className="font-bold text-emerald-800">Desa Air Sempiang</h2>
-                  <p className="text-xs text-gray-500">Kec. Kabawetan, Kab. Kepahiang, Prov. Bengkulu</p>
-                  <p className="text-xs text-gray-500">No. Pesanan: {orderResult.id.substring(0, 12).toUpperCase()}</p>
-                  <p className="text-xs text-gray-500">Tanggal: {new Date(orderResult.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-gray-500">Nama Pembeli</p>
-                    <p className="font-medium">{buyerName}</p>
+            <Card className="border-0 shadow-2xl overflow-hidden">
+              {/* Green header */}
+              <div className="bg-gradient-to-r from-emerald-700 to-emerald-800 px-5 py-4 text-white">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <Receipt className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-gray-500">No. Telepon</p>
-                    <p className="font-medium">{buyerPhone}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Metode Pembayaran</p>
-                    <p className="font-medium">{selectedPayment?.label}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Status</p>
-                    <Badge className="bg-amber-100 text-amber-800">Menunggu Pembayaran</Badge>
+                    <h2 className="font-bold text-base">Desa Air Sempiang Digital</h2>
+                    <p className="text-emerald-200 text-xs">Kec. Kabawetan, Kab. Kepahiang</p>
                   </div>
                 </div>
+              </div>
 
-                <Separator />
-
+              <CardContent className="p-5 space-y-4 font-mono">
+                {/* Greeting */}
                 <div>
-                  <p className="font-bold text-emerald-800 mb-2">Detail Pesanan</p>
-                  <div className="space-y-2">
-                    {pendingOrder.items.map((item, i) => (
-                      <div key={i} className="flex justify-between text-sm">
-                        <span>{item.name} x{item.quantity}</span>
-                        <span className="font-medium">{formatPrice(item.price * item.quantity)}</span>
-                      </div>
-                    ))}
+                  <p className="text-sm text-gray-700">Dear <span className="font-bold">{buyerName}</span>,</p>
+                  <p className="text-sm text-gray-600 mt-1">Terima kasih sudah berbelanja di <span className="font-bold text-emerald-700">Marketplace Desa Air Sempiang</span> 🎉</p>
+                </div>
+
+                <div className="border-t border-dashed border-gray-200" />
+
+                {/* Invoice Info */}
+                <div className="space-y-2">
+                  <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Detail Pesanan</p>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">No. Invoice</span>
+                    <span className="font-bold text-gray-900">{orderResult.invoiceNumber}</span>
                   </div>
-                  <Separator className="my-3" />
-                  <div className="flex justify-between text-lg font-bold text-emerald-800">
-                    <span>Total</span>
-                    <span>{formatPrice(pendingOrder.total)}</span>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Tanggal</span>
+                    <span className="text-gray-700">{date}, {time} WIB</span>
                   </div>
                 </div>
 
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <p className="text-sm font-medium text-amber-800 mb-1">Instruksi Pembayaran:</p>
-                  <p className="text-sm text-amber-700">{selectedPayment?.detail}</p>
-                  <p className="text-xs text-amber-600 mt-2">
-                    Kirim bukti pembayaran ke WhatsApp 085150859735 dengan menyertakan nomor pesanan Anda.
-                  </p>
+                <div className="border-t border-dashed border-gray-200" />
+
+                {/* Items */}
+                <div className="space-y-2">
+                  <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Item Pesanan</p>
+                  {pendingOrder.items.map((item, i) => (
+                    <div key={i} className="flex justify-between text-sm">
+                      <span className="text-gray-700">{item.name} x{item.quantity}</span>
+                      <span className="font-medium text-gray-900">{formatPrice(item.price * item.quantity)}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="border-t border-dashed border-gray-200" />
+
+                {/* Total */}
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-emerald-800 text-sm">Total Pembayaran</span>
+                  <span className="font-bold text-emerald-800 text-lg">{formatPrice(pendingOrder.total)}</span>
+                </div>
+
+                <div className="border-t border-dashed border-gray-200" />
+
+                {/* Payment Method */}
+                <div className="space-y-2">
+                  <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Metode Pembayaran</p>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Metode</span>
+                    <span className="font-bold text-gray-900">{selectedPayment?.label}</span>
+                  </div>
+                  <p className="text-xs text-gray-500 bg-gray-50 p-2 rounded">{selectedPayment?.detail}</p>
+                </div>
+
+                <div className="border-t border-dashed border-gray-200" />
+
+                {/* Status */}
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">Status</span>
+                  <Badge className="bg-amber-100 text-amber-800 font-bold">MENUNGGU PEMBAYARAN</Badge>
+                </div>
+
+                {/* Instruction */}
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                  <p className="text-xs font-medium text-amber-800 mb-1">📌 Instruksi:</p>
+                  <p className="text-xs text-amber-700">Mohon lakukan pembayaran sesuai metode di atas, lalu kirim bukti pembayaran ke WhatsApp desa di nomor <span className="font-bold">085150859735</span>.</p>
+                </div>
+
+                <div className="border-t border-dashed border-gray-200" />
+
+                {/* Closing */}
+                <div className="text-center text-xs text-gray-400">
+                  <p>Salam hormat,</p>
+                  <p className="font-bold text-emerald-700">Marketplace Desa Air Sempiang</p>
+                  <p>Kec. Kabawetan, Kab. Kepahiang, Bengkulu</p>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          <div className="flex gap-4 mt-6 justify-center">
-            <Button variant="outline" onClick={handlePrint}>
-              <Printer className="mr-2 h-4 w-4" /> Cetak Bukti
+          {/* Action Buttons */}
+          <div className="flex flex-col gap-3 mt-6">
+            <Button
+              className="w-full bg-green-600 hover:bg-green-500 py-5 text-base"
+              onClick={handleSendWhatsApp}
+            >
+              <svg className="mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+              Kirim Bukti ke WhatsApp Pembeli
             </Button>
             <Button
-              className="bg-emerald-600 hover:bg-emerald-700"
+              variant="outline"
+              className="w-full py-4"
+              onClick={handlePrint}
+            >
+              <Printer className="mr-2 h-4 w-4" /> Cetak Bukti Transaksi
+            </Button>
+            <Button
+              className="w-full bg-emerald-600 hover:bg-emerald-700 py-4"
               onClick={() => setCurrentPage('beranda')}
             >
               Kembali ke Beranda
             </Button>
-            <a
-              href={`https://wa.me/6285150859735?text=${encodeURIComponent(
-                `Halo, saya ${buyerName} ingin mengirim bukti pembayaran untuk pesanan ${orderResult.id.substring(0, 12).toUpperCase()} sebesar ${formatPrice(pendingOrder.total)}`
-              )}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button className="bg-green-600 hover:bg-green-500">
-                <svg className="mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                </svg>
-                Kirim Bukti via WA
-              </Button>
-            </a>
           </div>
         </div>
       </div>
@@ -335,7 +414,7 @@ export default function PaymentPage() {
                 placeholder="08xxxxxxxxxx"
                 required
               />
-              <p className="text-xs text-gray-400">Bukti transaksi akan dikirim ke nomor ini</p>
+              <p className="text-xs text-gray-400">Bukti transaksi akan dikirim ke nomor WhatsApp ini</p>
             </div>
             {isBank && (
               <>
