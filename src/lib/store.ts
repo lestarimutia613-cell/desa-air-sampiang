@@ -4,15 +4,10 @@ export type Page =
   | 'beranda' 
   | 'layanan' 
   | 'marketplace' 
-  | 'kependudukan' 
-  | 'corporate-university' 
-  | 'literasi' 
-  | 'konsol' 
+  | 'komunitas' 
   | 'berita' 
-  | 'login' 
-  | 'register' 
-  | 'admin' 
-  | 'admin-login'
+  | 'login'
+  | 'register'
   | 'payment'
   | 'order-history'
   | 'product-detail';
@@ -40,8 +35,6 @@ interface AppState {
   setCurrentPage: (page: Page) => void;
   user: User | null;
   setUser: (user: User | null) => void;
-  admin: User | null;
-  setAdmin: (admin: User | null) => void;
   cart: CartItem[];
   addToCart: (item: CartItem) => void;
   removeFromCart: (productId: string) => void;
@@ -66,8 +59,6 @@ export const useAppStore = create<AppState>((set, get) => ({
   setCurrentPage: (page) => set({ currentPage: page }),
   user: null,
   setUser: (user) => set({ user }),
-  admin: null,
-  setAdmin: (admin) => set({ admin }),
   cart: [],
   addToCart: (item) => {
     const cart = get().cart;

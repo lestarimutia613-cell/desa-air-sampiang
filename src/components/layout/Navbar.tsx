@@ -9,27 +9,20 @@ import {
   Menu,
   Home,
   ShoppingBag,
-  FileText,
-  Users,
-  GraduationCap,
-  BookOpen,
-  HeadphonesIcon,
   Newspaper,
   LogIn,
   LogOut,
-  Shield,
   ShoppingCart,
   Package,
+  FileText,
+  Users,
 } from 'lucide-react';
 
 const navItems: { label: string; page: Page; icon: React.ReactNode }[] = [
   { label: 'Beranda', page: 'beranda', icon: <Home className="h-4 w-4" /> },
-  { label: 'Layanan Desa', page: 'layanan', icon: <FileText className="h-4 w-4" /> },
+  { label: 'Layanan', page: 'layanan', icon: <FileText className="h-4 w-4" /> },
   { label: 'Marketplace', page: 'marketplace', icon: <ShoppingBag className="h-4 w-4" /> },
-  { label: 'Kependudukan', page: 'kependudukan', icon: <Users className="h-4 w-4" /> },
-  { label: 'Corporate University', page: 'corporate-university', icon: <GraduationCap className="h-4 w-4" /> },
-  { label: 'Literasi', page: 'literasi', icon: <BookOpen className="h-4 w-4" /> },
-  { label: 'Konsol', page: 'konsol', icon: <HeadphonesIcon className="h-4 w-4" /> },
+  { label: 'Komunitas', page: 'komunitas', icon: <Users className="h-4 w-4" /> },
   { label: 'Berita', page: 'berita', icon: <Newspaper className="h-4 w-4" /> },
 ];
 
@@ -126,17 +119,6 @@ export default function Navbar() {
               </button>
             )}
 
-            {/* Admin Panel Button (separate from user login) */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleNav('admin-login')}
-              className={`text-xs ${scrolled ? 'text-orange-600 hover:bg-orange-50' : 'text-orange-300 hover:bg-white/10'}`}
-            >
-              <Shield className="h-4 w-4 mr-1" />
-              <span className="hidden md:inline">Admin</span>
-            </Button>
-
             {/* User Menu */}
             {user ? (
               <div className="flex items-center gap-2">
@@ -190,13 +172,6 @@ export default function Navbar() {
                     </button>
                   ))}
                   <div className="border-t my-2" />
-                  <button
-                    onClick={() => handleNav('admin-login')}
-                    className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-medium text-orange-600 hover:bg-orange-50"
-                  >
-                    <Shield className="h-4 w-4" />
-                    Panel Admin
-                  </button>
                   {user ? (
                     <>
                       <button

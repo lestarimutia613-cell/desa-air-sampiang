@@ -173,12 +173,6 @@ export default function LoginPage() {
                 {isRegister ? 'Sudah punya akun? Masuk' : 'Belum punya akun? Daftar'}
               </button>
             </div>
-
-            <div className="mt-4 p-3 bg-amber-50 rounded-lg">
-              <p className="text-xs text-amber-700 text-center">
-                Untuk akses panel admin, gunakan menu <span className="font-bold">Admin</span> di navbar.
-              </p>
-            </div>
           </CardContent>
         </Card>
       </div>

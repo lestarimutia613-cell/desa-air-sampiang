@@ -7,40 +7,30 @@ import Footer from '@/components/layout/Footer';
 import AiChatBot from '@/components/chat/AiChatBot';
 import FloatingWhatsApp from '@/components/layout/FloatingWhatsApp';
 import BerandaPage from '@/components/pages/BerandaPage';
-import LayananDesaPage from '@/components/pages/LayananDesaPage';
+import LayananPage from '@/components/pages/LayananPage';
 import MarketplacePage from '@/components/pages/MarketplacePage';
-import KependudukanPage from '@/components/pages/KependudukanPage';
-import CorporateUniversityPage from '@/components/pages/CorporateUniversityPage';
-import LiterasiPage from '@/components/pages/LiterasiPage';
-import KonsolPage from '@/components/pages/KonsolPage';
+import KomunitasPage from '@/components/pages/KomunitasPage';
 import BeritaPage from '@/components/pages/BeritaPage';
 import LoginPage from '@/components/pages/LoginPage';
 import PaymentPage from '@/components/pages/PaymentPage';
-import AdminPage from '@/components/pages/AdminPage';
-import AdminLoginPage from '@/components/pages/AdminLoginPage';
 import OrderHistoryPage from '@/components/pages/OrderHistoryPage';
 import { MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const pageMap: Record<string, React.ComponentType> = {
   'beranda': BerandaPage,
-  'layanan': LayananDesaPage,
+  'layanan': LayananPage,
   'marketplace': MarketplacePage,
-  'kependudukan': KependudukanPage,
-  'corporate-university': CorporateUniversityPage,
-  'literasi': LiterasiPage,
-  'konsol': KonsolPage,
+  'komunitas': KomunitasPage,
   'berita': BeritaPage,
   'login': LoginPage,
   'register': LoginPage,
   'payment': PaymentPage,
-  'admin': AdminPage,
-  'admin-login': AdminLoginPage,
   'order-history': OrderHistoryPage,
 };
 
 export default function Home() {
-  const { currentPage, chatOpen, setChatOpen, setUser, setAdmin } = useAppStore();
+  const { currentPage, chatOpen, setChatOpen, setUser } = useAppStore();
 
   // Restore user from localStorage
   useEffect(() => {
@@ -50,27 +40,15 @@ export default function Home() {
         setUser(JSON.parse(savedUser));
       } catch {}
     }
-    const savedAdmin = localStorage.getItem('desa_admin');
-    if (savedAdmin) {
-      try {
-        setAdmin(JSON.parse(savedAdmin));
-      } catch {}
-    }
-  }, [setUser, setAdmin]);
+  }, [setUser]);
 
-  // Save user/admin to localStorage on change
+  // Save user to localStorage on change
   useEffect(() => {
     const user = useAppStore.getState().user;
     if (user) {
       localStorage.setItem('desa_user', JSON.stringify(user));
     } else {
       localStorage.removeItem('desa_user');
-    }
-    const admin = useAppStore.getState().admin;
-    if (admin) {
-      localStorage.setItem('desa_admin', JSON.stringify(admin));
-    } else {
-      localStorage.removeItem('desa_admin');
     }
   });
 

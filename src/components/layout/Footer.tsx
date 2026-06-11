@@ -1,10 +1,15 @@
 'use client';
 
-import { useAppStore } from '@/lib/store';
+import { useAppStore, Page } from '@/lib/store';
 import { Phone, Mail, MapPin } from 'lucide-react';
 
 export default function Footer() {
   const { setCurrentPage } = useAppStore();
+
+  const handleNav = (page: Page) => {
+    setCurrentPage(page);
+    window.scrollTo(0, 0);
+  };
 
   return (
     <footer className="bg-emerald-900 text-white mt-auto">
@@ -39,17 +44,15 @@ export default function Footer() {
             <h3 className="text-lg font-bold mb-4">Tautan Cepat</h3>
             <nav className="space-y-2 text-sm text-emerald-300">
               {[
-                { label: 'Beranda', page: 'beranda' as const },
-                { label: 'Layanan Desa', page: 'layanan' as const },
-                { label: 'Marketplace', page: 'marketplace' as const },
-                { label: 'Kependudukan', page: 'kependudukan' as const },
-                { label: 'Corporate University', page: 'corporate-university' as const },
-                { label: 'Literasi', page: 'literasi' as const },
-                { label: 'Berita Terbaru', page: 'berita' as const },
+                { label: 'Beranda', page: 'beranda' as Page },
+                { label: 'Layanan', page: 'layanan' as Page },
+                { label: 'Marketplace', page: 'marketplace' as Page },
+                { label: 'Komunitas', page: 'komunitas' as Page },
+                { label: 'Berita Terbaru', page: 'berita' as Page },
               ].map((item) => (
                 <button
                   key={item.page}
-                  onClick={() => { setCurrentPage(item.page); window.scrollTo(0, 0); }}
+                  onClick={() => handleNav(item.page)}
                   className="block hover:text-white transition-colors"
                 >
                   {item.label}
