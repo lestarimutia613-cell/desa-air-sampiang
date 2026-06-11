@@ -4,36 +4,20 @@ import { createHash } from 'crypto';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create admin user (separate Admin table)
+  // Create admin user with username "admin" and password "admin123"
   const adminPassword = 'admin123';
   const hashedAdminPw = createHash('sha256').update(adminPassword).digest('hex');
   
   await prisma.admin.upsert({
-    where: { email: 'admin@desaairsempiang.id' },
+    where: { username: 'admin' },
     update: {},
     create: {
+      username: 'admin',
       email: 'admin@desaairsempiang.id',
       name: 'Admin Desa',
       password: hashedAdminPw,
       role: 'ADMIN',
       phone: '085150859735',
-    },
-  });
-
-  // Create demo user (regular user only)
-  const userPassword = 'user123';
-  const hashedUserPw = createHash('sha256').update(userPassword).digest('hex');
-  
-  await prisma.user.upsert({
-    where: { email: 'warga@desaairsempiang.id' },
-    update: {},
-    create: {
-      email: 'warga@desaairsempiang.id',
-      name: 'Warga Demo',
-      password: hashedUserPw,
-      role: 'USER',
-      phone: '081234567890',
-      address: 'Desa Air Sempiang, Kec. Kabawetan, Kab. Kepahiang',
     },
   });
 
@@ -137,7 +121,8 @@ async function main() {
     await prisma.residentData.create({ data });
   }
 
-  console.log('Seed data inserted successfully!');
+  console.log('✅ Seed data inserted successfully!');
+  console.log('📋 Admin login: username=admin, password=admin123');
 }
 
 main()

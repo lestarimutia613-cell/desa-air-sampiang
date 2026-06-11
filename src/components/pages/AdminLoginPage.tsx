@@ -6,12 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Shield, Mail, Lock, ArrowLeft, AlertCircle } from 'lucide-react';
+import { Shield, User, Lock, ArrowLeft, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const { setCurrentPage, setAdmin } = useAppStore();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -26,7 +27,7 @@ export default function AdminLoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'admin-login',
-          email,
+          username,
           password,
         }),
       });
@@ -34,7 +35,7 @@ export default function AdminLoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || 'Email atau password admin salah');
+        setError(data.error || 'Username atau password admin salah');
         return;
       }
 
@@ -77,17 +78,18 @@ export default function AdminLoginPage() {
 
             <form onSubmit={handleAdminLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="admin-email">Email Admin</Label>
+                <Label htmlFor="admin-username">Username Admin</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
-                    id="admin-email"
-                    type="email"
-                    placeholder="admin@desaairsempiang.id"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    id="admin-username"
+                    type="text"
+                    placeholder="Masukkan username admin"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     className="pl-10"
                     required
+                    autoComplete="username"
                   />
                 </div>
               </div>
@@ -97,13 +99,21 @@ export default function AdminLoginPage() {
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="admin-password"
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="Masukkan password admin"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 pr-10"
                     required
+                    autoComplete="current-password"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
 
@@ -122,15 +132,6 @@ export default function AdminLoginPage() {
                 {loading ? 'Memverifikasi...' : 'Masuk sebagai Admin'}
               </Button>
             </form>
-
-            <div className="mt-4 p-3 bg-orange-50 rounded-lg">
-              <p className="text-xs text-gray-500 text-center mb-2">Akun Admin Demo:</p>
-              <div className="bg-white p-2 rounded text-xs text-center">
-                <p className="font-medium text-orange-800">Admin Desa</p>
-                <p className="text-gray-500">admin@desaairsempiang.id</p>
-                <p className="text-gray-500">admin123</p>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>

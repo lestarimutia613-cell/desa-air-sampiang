@@ -5,7 +5,7 @@ import { createHash } from 'crypto';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action, email, password, name, phone, address } = body;
+    const { action, email, password, name, phone, address, username } = body;
 
     if (action === 'login') {
       const hashedPassword = createHash('sha256').update(password).digest('hex');
@@ -55,14 +55,17 @@ export async function POST(request: NextRequest) {
 
     if (action === 'admin-login') {
       const hashedPassword = createHash('sha256').update(password).digest('hex');
-      const admin = await db.admin.findUnique({ where: { email } });
+      
+      // Look up admin by username (not email)
+      const admin = await db.admin.findUnique({ where: { username } });
 
       if (!admin || admin.password !== hashedPassword) {
-        return NextResponse.json({ error: 'Email atau password admin salah' }, { status: 401 });
+        return NextResponse.json({ error: 'Username atau password admin salah' }, { status: 401 });
       }
 
       return NextResponse.json({
         id: admin.id,
+        username: admin.username,
         email: admin.email,
         name: admin.name,
         role: 'ADMIN',

@@ -174,20 +174,10 @@ export default function LoginPage() {
               </button>
             </div>
 
-            <div className="mt-4 p-3 bg-emerald-50 rounded-lg">
-              <p className="text-xs text-gray-500 text-center mb-2">Demo Akun:</p>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="bg-white p-2 rounded">
-                  <p className="font-medium text-emerald-800">Admin</p>
-                  <p className="text-gray-500">admin@desaairsempiang.id</p>
-                  <p className="text-gray-500">admin123</p>
-                </div>
-                <div className="bg-white p-2 rounded">
-                  <p className="font-medium text-emerald-800">Warga</p>
-                  <p className="text-gray-500">warga@desaairsempiang.id</p>
-                  <p className="text-gray-500">user123</p>
-                </div>
-              </div>
+            <div className="mt-4 p-3 bg-amber-50 rounded-lg">
+              <p className="text-xs text-amber-700 text-center">
+                Untuk akses panel admin, gunakan menu <span className="font-bold">Admin</span> di navbar.
+              </p>
             </div>
           </CardContent>
         </Card>
