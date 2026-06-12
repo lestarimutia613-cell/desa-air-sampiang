@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -43,7 +44,8 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function OrderHistoryPage() {
-  const { user, setCurrentPage } = useAppStore();
+  const router = useRouter();
+  const { user } = useAppStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -61,7 +63,7 @@ export default function OrderHistoryPage() {
         <Card className="max-w-md">
           <CardContent className="p-6 text-center">
             <p className="text-gray-600 mb-4">Silakan masuk terlebih dahulu</p>
-            <Button onClick={() => setCurrentPage('login')} className="bg-emerald-600 hover:bg-emerald-700">
+            <Button onClick={() => router.push('/login')} className="bg-emerald-600 hover:bg-emerald-700">
               Masuk
             </Button>
           </CardContent>
@@ -76,7 +78,7 @@ export default function OrderHistoryPage() {
     <div className="py-12">
       <div className="max-w-4xl mx-auto px-4">
         <button
-          onClick={() => setCurrentPage('beranda')}
+          onClick={() => router.push('/')}
           className="flex items-center gap-2 text-emerald-600 hover:text-emerald-800 mb-6 text-sm font-medium"
         >
           <ArrowLeft className="h-4 w-4" /> Kembali
@@ -101,7 +103,7 @@ export default function OrderHistoryPage() {
               <Package className="h-12 w-12 text-gray-300 mx-auto mb-4" />
               <h3 className="font-bold text-gray-900 mb-2">Belum ada pesanan</h3>
               <p className="text-gray-600 text-sm mb-4">Mulai berbelanja di marketplace desa</p>
-              <Button onClick={() => setCurrentPage('marketplace')} className="bg-emerald-600 hover:bg-emerald-700">
+              <Button onClick={() => router.push('/marketplace')} className="bg-emerald-600 hover:bg-emerald-700">
                 Ke Marketplace
               </Button>
             </CardContent>

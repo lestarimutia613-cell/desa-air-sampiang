@@ -1,12 +1,12 @@
 'use client';
 
 import PublicLayout from '@/components/layout/PublicLayout';
-import BerandaPage from '@/components/pages/BerandaPage';
+import LayananPage from '@/components/pages/LayananPage';
 
-export default function Home() {
+export default function LayananRoute() {
   return (
     <PublicLayout>
-      <BerandaPage />
+      <LayananPage />
     </PublicLayout>
   );
 }

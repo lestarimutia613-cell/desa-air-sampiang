@@ -1,0 +1,499 @@
+     1→'use client';
+     2→
+     3→import { useState, useEffect } from 'react';
+     4→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+     5→import { Badge } from '@/components/ui/badge';
+     6→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+     7→import {
+     8→  BarChart3,
+     9→  Users,
+    10→  ShoppingBag,
+    11→  Tractor,
+    12→  Eye,
+    13→  TrendingUp,
+    14→  Package,
+    15→  FileText,
+    16→  Clock,
+    17→  DollarSign,
+    18→  Phone,
+    19→  MessageCircle,
+    20→  Mail,
+    21→  HelpCircle,
+    22→  ShieldCheck,
+    23→  HeadphonesIcon,
+    24→} from 'lucide-react';
+    25→
+    26→interface Stats {
+    27→  totalUsers: number;
+    28→  totalProducts: number;
+    29→  totalOrders: number;
+    30→  totalNews: number;
+    31→  totalServices: number;
+    32→  pendingOrders: number;
+    33→  totalRevenue: { _sum: { totalAmount: number | null } };
+    34→}
+    35→
+    36→export default function KonsolPage() {
+    37→  const [stats, setStats] = useState<Stats | null>(null);
+    38→  const [loading, setLoading] = useState(true);
+    39→
+    40→  useEffect(() => {
+    41→    fetch('/api/admin')
+    42→      .then((r) => r.json())
+    43→      .then((d) => { setStats(d); setLoading(false); })
+    44→      .catch(() => setLoading(false));
+    45→  }, []);
+    46→
+    47→  const formatPrice = (price: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
+    48→
+    49→  return (
+    50→    <div className="py-12">
+    51→      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    52→        {/* Header */}
+    53→        <div className="text-center mb-10">
+    54→          <Badge className="bg-emerald-100 text-emerald-800 mb-3"><BarChart3 className="h-3 w-3 mr-1 inline" /> Console / Dashboard</Badge>
+    55→          <h1 className="text-3xl font-bold text-emerald-900 mb-3">Statistik & Monitoring Desa</h1>
+    56→          <p className="text-gray-600 max-w-2xl mx-auto">
+    57→            Pusat monitoring dan analitik desa. Pantau perkembangan layanan, kependudukan, UMKM, dan pertanian secara real-time.
+    58→          </p>
+    59→        </div>
+    60→
+    61→        <Tabs defaultValue="statistik" className="space-y-6">
+    62→          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 gap-1 h-auto p-1">
+    63→            <TabsTrigger value="statistik" className="text-xs py-2">
+    64→              <BarChart3 className="h-3.5 w-3.5 mr-1" /> Statistik
+    65→            </TabsTrigger>
+    66→            <TabsTrigger value="layanan" className="text-xs py-2">
+    67→              <Eye className="h-3.5 w-3.5 mr-1" /> Layanan
+    68→            </TabsTrigger>
+    69→            <TabsTrigger value="pengunjung" className="text-xs py-2">
+    70→              <TrendingUp className="h-3.5 w-3.5 mr-1" /> Analitik
+    71→            </TabsTrigger>
+    72→            <TabsTrigger value="kependudukan" className="text-xs py-2">
+    73→              <Users className="h-3.5 w-3.5 mr-1" /> Penduduk
+    74→            </TabsTrigger>
+    75→            <TabsTrigger value="umkm" className="text-xs py-2">
+    76→              <ShoppingBag className="h-3.5 w-3.5 mr-1" /> UMKM
+    77→            </TabsTrigger>
+    78→            <TabsTrigger value="pertanian" className="text-xs py-2">
+    79→              <Tractor className="h-3.5 w-3.5 mr-1" /> Pertanian
+    80→            </TabsTrigger>
+    81→          </TabsList>
+    82→
+    83→          {/* Tab: Statistik Desa */}
+    84→          <TabsContent value="statistik">
+    85→            {loading ? (
+    86→              <div className="text-center py-12 text-gray-500">Memuat statistik...</div>
+    87→            ) : stats ? (
+    88→              <div className="space-y-6">
+    89→                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    90→                  {[
+    91→                    { label: 'Total Pengguna', value: stats.totalUsers, icon: <Users className="h-6 w-6" />, color: 'from-blue-500 to-blue-600', bg: 'bg-blue-50 text-blue-700' },
+    92→                    { label: 'Total Produk', value: stats.totalProducts, icon: <ShoppingBag className="h-6 w-6" />, color: 'from-emerald-500 to-emerald-600', bg: 'bg-emerald-50 text-emerald-700' },
+    93→                    { label: 'Total Pesanan', value: stats.totalOrders, icon: <Package className="h-6 w-6" />, color: 'from-purple-500 to-purple-600', bg: 'bg-purple-50 text-purple-700' },
+    94→                    { label: 'Pesanan Pending', value: stats.pendingOrders, icon: <Clock className="h-6 w-6" />, color: 'from-amber-500 to-amber-600', bg: 'bg-amber-50 text-amber-700' },
+    95→                    { label: 'Total Berita', value: stats.totalNews, icon: <FileText className="h-6 w-6" />, color: 'from-cyan-500 to-cyan-600', bg: 'bg-cyan-50 text-cyan-700' },
+    96→                    { label: 'Total Layanan', value: stats.totalServices, icon: <ShieldCheck className="h-6 w-6" />, color: 'from-pink-500 to-pink-600', bg: 'bg-pink-50 text-pink-700' },
+    97→                    { label: 'Pendapatan', value: formatPrice(stats.totalRevenue._sum.totalAmount || 0), icon: <DollarSign className="h-6 w-6" />, color: 'from-green-500 to-green-600', bg: 'bg-green-50 text-green-700' },
+    98→                    { label: 'Online', value: 'Aktif', icon: <Eye className="h-6 w-6" />, color: 'from-teal-500 to-teal-600', bg: 'bg-teal-50 text-teal-700' },
+    99→                  ].map((stat, i) => (
+   100→                    <Card key={i} className="border-0 shadow-md hover:shadow-lg transition-shadow">
+   101→                      <CardContent className="p-5">
+   102→                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 ${stat.bg}`}>
+   103→                          {stat.icon}
+   104→                        </div>
+   105→                        <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+   106→                        <p className="text-sm text-gray-500 mt-1">{stat.label}</p>
+   107→                      </CardContent>
+   108→                    </Card>
+   109→                  ))}
+   110→                </div>
+   111→
+   112→                {/* Summary Cards */}
+   113→                <div className="grid lg:grid-cols-2 gap-6">
+   114→                  <Card className="border-emerald-200">
+   115→                    <CardHeader>
+   116→                      <CardTitle className="text-emerald-800 flex items-center gap-2">
+   117→                        <BarChart3 className="h-5 w-5" /> Ringkasan Layanan
+   118→                      </CardTitle>
+   119→                    </CardHeader>
+   120→                    <CardContent>
+   121→                      <div className="space-y-3">
+   122→                        {[
+   123→                          { label: 'Kependudukan', progress: 85, color: 'bg-blue-500' },
+   124→                          { label: 'Surat-Menyurat', progress: 72, color: 'bg-emerald-500' },
+   125→                          { label: 'UMKM & Pertanian', progress: 68, color: 'bg-orange-500' },
+   126→                          { label: 'Pendidikan', progress: 54, color: 'bg-purple-500' },
+   127→                          { label: 'Lainnya', progress: 40, color: 'bg-gray-400' },
+   128→                        ].map((item, i) => (
+   129→                          <div key={i}>
+   130→                            <div className="flex justify-between text-sm mb-1">
+   131→                              <span className="text-gray-700">{item.label}</span>
+   132→                              <span className="text-gray-500">{item.progress}%</span>
+   133→                            </div>
+   134→                            <div className="w-full bg-gray-100 rounded-full h-2">
+   135→                              <div className={`${item.color} h-2 rounded-full transition-all`} style={{ width: `${item.progress}%` }} />
+   136→                            </div>
+   137→                          </div>
+   138→                        ))}
+   139→                      </div>
+   140→                    </CardContent>
+   141→                  </Card>
+   142→
+   143→                  <Card className="border-emerald-200">
+   144→                    <CardHeader>
+   145→                      <CardTitle className="text-emerald-800 flex items-center gap-2">
+   146→                        <TrendingUp className="h-5 w-5" /> Pertumbuhan Desa
+   147→                      </CardTitle>
+   148→                    </CardHeader>
+   149→                    <CardContent>
+   150→                      <div className="space-y-4">
+   151→                        {[
+   152→                          { label: 'Pengguna Terdaftar', value: '+12%', desc: 'dari bulan lalu', up: true },
+   153→                          { label: 'Transaksi Marketplace', value: '+24%', desc: 'dari bulan lalu', up: true },
+   154→                          { label: 'Layanan Selesai', value: '+8%', desc: 'dari bulan lalu', up: true },
+   155→                          { label: 'Kursus Diikuti', value: '+15%', desc: 'dari bulan lalu', up: true },
+   156→                        ].map((item, i) => (
+   157→                          <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+   158→                            <div>
+   159→                              <p className="font-medium text-sm text-gray-800">{item.label}</p>
+   160→                              <p className="text-xs text-gray-500">{item.desc}</p>
+   161→                            </div>
+   162→                            <Badge className="bg-green-100 text-green-800">{item.value}</Badge>
+   163→                          </div>
+   164→                        ))}
+   165→                      </div>
+   166→                    </CardContent>
+   167→                  </Card>
+   168→                </div>
+   169→              </div>
+   170→            ) : (
+   171→              <div className="text-center py-12 text-gray-500">Gagal memuat statistik</div>
+   172→            )}
+   173→          </TabsContent>
+   174→
+   175→          {/* Tab: Monitoring Layanan */}
+   176→          <TabsContent value="layanan">
+   177→            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+   178→              {[
+   179→                { name: 'Pembuatan KTP', status: 'Aktif', processed: 24, pending: 3, avg: '3 hari' },
+   180→                { name: 'Pembuatan KK', status: 'Aktif', processed: 18, pending: 2, avg: '5 hari' },
+   181→                { name: 'Surat Domisili', status: 'Aktif', processed: 42, pending: 5, avg: '1 hari' },
+   182→                { name: 'SKTM', status: 'Aktif', processed: 15, pending: 1, avg: '2 hari' },
+   183→                { name: 'Izin Usaha', status: 'Aktif', processed: 8, pending: 2, avg: '7 hari' },
+   184→                { name: 'Bantuan Pertanian', status: 'Aktif', processed: 12, pending: 4, avg: '14 hari' },
+   185→              ].map((svc, i) => (
+   186→                <Card key={i} className="border-emerald-100 hover:shadow-md transition-shadow">
+   187→                  <CardContent className="p-5">
+   188→                    <div className="flex items-center justify-between mb-3">
+   189→                      <h3 className="font-semibold text-gray-900 text-sm">{svc.name}</h3>
+   190→                      <Badge className="bg-green-100 text-green-800 text-[10px]">{svc.status}</Badge>
+   191→                    </div>
+   192→                    <div className="grid grid-cols-3 gap-2 text-center">
+   193→                      <div className="bg-blue-50 rounded-lg p-2">
+   194→                        <p className="text-lg font-bold text-blue-800">{svc.processed}</p>
+   195→                        <p className="text-[10px] text-blue-600">Diproses</p>
+   196→                      </div>
+   197→                      <div className="bg-amber-50 rounded-lg p-2">
+   198→                        <p className="text-lg font-bold text-amber-800">{svc.pending}</p>
+   199→                        <p className="text-[10px] text-amber-600">Pending</p>
+   200→                      </div>
+   201→                      <div className="bg-emerald-50 rounded-lg p-2">
+   202→                        <p className="text-lg font-bold text-emerald-800">{svc.avg}</p>
+   203→                        <p className="text-[10px] text-emerald-600">Rata-rata</p>
+   204→                      </div>
+   205→                    </div>
+   206→                  </CardContent>
+   207→                </Card>
+   208→              ))}
+   209→            </div>
+   210→          </TabsContent>
+   211→
+   212→          {/* Tab: Analitik Pengunjung */}
+   213→          <TabsContent value="pengunjung">
+   214→            <div className="grid lg:grid-cols-2 gap-6">
+   215→              <Card className="border-emerald-200">
+   216→                <CardHeader>
+   217→                  <CardTitle className="text-emerald-800 text-base">Kunjungan Website</CardTitle>
+   218→                </CardHeader>
+   219→                <CardContent>
+   220→                  <div className="space-y-3">
+   221→                    {['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'].map((day, i) => {
+   222→                      const visits = [45, 62, 58, 71, 84, 95, 53];
+   223→                      return (
+   224→                        <div key={i} className="flex items-center gap-3">
+   225→                          <span className="text-xs text-gray-500 w-16">{day}</span>
+   226→                          <div className="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
+   227→                            <div
+   228→                              className="bg-gradient-to-r from-emerald-400 to-emerald-600 h-full rounded-full transition-all"
+   229→                              style={{ width: `${(visits[i] / 100) * 100}%` }}
+   230→                            />
+   231→                          </div>
+   232→                          <span className="text-xs font-medium text-gray-700 w-8">{visits[i]}</span>
+   233→                        </div>
+   234→                      );
+   235→                    })}
+   236→                  </div>
+   237→                  <div className="mt-4 p-3 bg-emerald-50 rounded-lg flex items-center gap-3">
+   238→                    <TrendingUp className="h-5 w-5 text-emerald-600" />
+   239→                    <div>
+   240→                      <p className="text-sm font-semibold text-emerald-800">+18% kunjungan</p>
+   241→                      <p className="text-xs text-emerald-600">dibanding minggu lalu</p>
+   242→                    </div>
+   243→                  </div>
+   244→                </CardContent>
+   245→              </Card>
+   246→
+   247→              <Card className="border-emerald-200">
+   248→                <CardHeader>
+   249→                  <CardTitle className="text-emerald-800 text-base">Sumber Kunjungan</CardTitle>
+   250→                </CardHeader>
+   251→                <CardContent>
+   252→                  <div className="space-y-4">
+   253→                    {[
+   254→                      { source: 'Langsung', pct: 35, color: 'bg-emerald-500' },
+   255→                      { source: 'WhatsApp', pct: 28, color: 'bg-green-500' },
+   256→                      { source: 'Media Sosial', pct: 22, color: 'bg-blue-500' },
+   257→                      { source: 'Pencarian Google', pct: 10, color: 'bg-purple-500' },
+   258→                      { source: 'Lainnya', pct: 5, color: 'bg-gray-400' },
+   259→                    ].map((item, i) => (
+   260→                      <div key={i}>
+   261→                        <div className="flex justify-between text-sm mb-1">
+   262→                          <span className="text-gray-700">{item.source}</span>
+   263→                          <span className="font-medium text-gray-900">{item.pct}%</span>
+   264→                        </div>
+   265→                        <div className="w-full bg-gray-100 rounded-full h-3">
+   266→                          <div className={`${item.color} h-3 rounded-full`} style={{ width: `${item.pct}%` }} />
+   267→                        </div>
+   268→                      </div>
+   269→                    ))}
+   270→                  </div>
+   271→                </CardContent>
+   272→              </Card>
+   273→            </div>
+   274→          </TabsContent>
+   275→
+   276→          {/* Tab: Grafik Kependudukan */}
+   277→          <TabsContent value="kependudukan">
+   278→            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+   279→              {[
+   280→                { label: 'Total Penduduk', value: '3.245', male: '1.642', female: '1.603', icon: <Users className="h-6 w-6" />, color: 'bg-blue-50 text-blue-700' },
+   281→                { label: 'Kepala Keluarga', value: '856', male: '-', female: '-', icon: <Users className="h-6 w-6" />, color: 'bg-emerald-50 text-emerald-700' },
+   282→                { label: 'Usia Produktif', value: '1.890', male: '955', female: '935', icon: <TrendingUp className="h-6 w-6" />, color: 'bg-orange-50 text-orange-700' },
+   283→                { label: 'Anak-anak (0-17)', value: '895', male: '456', female: '439', icon: <Users className="h-6 w-6" />, color: 'bg-pink-50 text-pink-700' },
+   284→                { label: 'Lansia (55+)', value: '460', male: '231', female: '229', icon: <Users className="h-6 w-6" />, color: 'bg-purple-50 text-purple-700' },
+   285→                { label: 'Pelajar/Mahasiswa', value: '345', male: '175', female: '170', icon: <Users className="h-6 w-6" />, color: 'bg-cyan-50 text-cyan-700' },
+   286→              ].map((item, i) => (
+   287→                <Card key={i} className="hover:shadow-md transition-shadow">
+   288→                  <CardContent className="p-5">
+   289→                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 ${item.color}`}>
+   290→                      {item.icon}
+   291→                    </div>
+   292→                    <p className="text-2xl font-bold text-gray-900">{item.value}</p>
+   293→                    <p className="text-sm text-gray-500 mb-2">{item.label}</p>
+   294→                    {(item.male !== '-' || item.female !== '-') && (
+   295→                      <div className="flex gap-2">
+   296→                        {item.male !== '-' && <Badge variant="outline" className="text-[10px]">L: {item.male}</Badge>}
+   297→                        {item.female !== '-' && <Badge variant="outline" className="text-[10px]">P: {item.female}</Badge>}
+   298→                      </div>
+   299→                    )}
+   300→                  </CardContent>
+   301→                </Card>
+   302→              ))}
+   303→            </div>
+   304→
+   305→            {/* Population Distribution */}
+   306→            <Card className="mt-6 border-emerald-200">
+   307→              <CardHeader>
+   308→                <CardTitle className="text-emerald-800 text-base">Distribusi Usia Penduduk</CardTitle>
+   309→              </CardHeader>
+   310→              <CardContent>
+   311→                <div className="space-y-3">
+   312→                  {[
+   313→                    { group: '0-14 tahun', pct: 27.6, color: 'bg-pink-400' },
+   314→                    { group: '15-24 tahun', pct: 17.3, color: 'bg-blue-400' },
+   315→                    { group: '25-34 tahun', pct: 18.5, color: 'bg-emerald-400' },
+   316→                    { group: '35-44 tahun', pct: 16.2, color: 'bg-orange-400' },
+   317→                    { group: '45-54 tahun', pct: 10.5, color: 'bg-purple-400' },
+   318→                    { group: '55-64 tahun', pct: 5.8, color: 'bg-cyan-400' },
+   319→                    { group: '65+ tahun', pct: 4.1, color: 'bg-gray-400' },
+   320→                  ].map((item, i) => (
+   321→                    <div key={i} className="flex items-center gap-3">
+   322→                      <span className="text-xs text-gray-600 w-24">{item.group}</span>
+   323→                      <div className="flex-1 bg-gray-100 rounded-full h-5 overflow-hidden">
+   324→                        <div className={`${item.color} h-full rounded-full flex items-center justify-end pr-2`}
+   325→                          style={{ width: `${item.pct * 3}%` }}>
+   326→                          <span className="text-[10px] font-bold text-white">{item.pct}%</span>
+   327→                        </div>
+   328→                      </div>
+   329→                    </div>
+   330→                  ))}
+   331→                </div>
+   332→              </CardContent>
+   333→            </Card>
+   334→          </TabsContent>
+   335→
+   336→          {/* Tab: Grafik UMKM */}
+   337→          <TabsContent value="umkm">
+   338→            <div className="grid lg:grid-cols-2 gap-6">
+   339→              <Card className="border-emerald-200">
+   340→                <CardHeader>
+   341→                  <CardTitle className="text-emerald-800 text-base">Kategori UMKM</CardTitle>
+   342→                </CardHeader>
+   343→                <CardContent>
+   344→                  <div className="space-y-4">
+   345→                    {[
+   346→                      { name: 'Makanan & Minuman', count: 15, pct: 36, color: 'bg-orange-400' },
+   347→                      { name: 'Kerajinan Tangan', count: 10, pct: 24, color: 'bg-pink-400' },
+   348→                      { name: 'Pertanian', count: 8, pct: 19, color: 'bg-green-400' },
+   349→                      { name: 'Jasa', count: 5, pct: 12, color: 'bg-blue-400' },
+   350→                      { name: 'Lainnya', count: 4, pct: 9, color: 'bg-gray-400' },
+   351→                    ].map((item, i) => (
+   352→                      <div key={i}>
+   353→                        <div className="flex justify-between text-sm mb-1">
+   354→                          <span className="text-gray-700">{item.name}</span>
+   355→                          <span className="font-medium">{item.count} usaha ({item.pct}%)</span>
+   356→                        </div>
+   357→                        <div className="w-full bg-gray-100 rounded-full h-3">
+   358→                          <div className={`${item.color} h-3 rounded-full`} style={{ width: `${item.pct}%` }} />
+   359→                        </div>
+   360→                      </div>
+   361→                    ))}
+   362→                  </div>
+   363→                </CardContent>
+   364→              </Card>
+   365→
+   366→              <Card className="border-emerald-200">
+   367→                <CardHeader>
+   368→                  <CardTitle className="text-emerald-800 text-base">Performa Marketplace</CardTitle>
+   369→                </CardHeader>
+   370→                <CardContent>
+   371→                  <div className="space-y-4">
+   372→                    {[
+   373→                      { label: 'Produk Terjual Bulan Ini', value: '156', change: '+23%', up: true },
+   374→                      { label: 'Total Transaksi', value: 'Rp 12.4 Jt', change: '+18%', up: true },
+   375→                      { label: 'Rata-rata Nilai Pesanan', value: 'Rp 79.500', change: '+5%', up: true },
+   376→                      { label: 'Produk Aktif', value: '8', change: '0%', up: false },
+   377→                      { label: 'Penjual Aktif', value: '5', change: '+2', up: true },
+   378→                    ].map((item, i) => (
+   379→                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+   380→                        <span className="text-sm text-gray-700">{item.label}</span>
+   381→                        <div className="flex items-center gap-2">
+   382→                          <span className="font-bold text-gray-900">{item.value}</span>
+   383→                          <Badge className={item.up ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}>
+   384→                            {item.change}
+   385→                          </Badge>
+   386→                        </div>
+   387→                      </div>
+   388→                    ))}
+   389→                  </div>
+   390→                </CardContent>
+   391→              </Card>
+   392→            </div>
+   393→          </TabsContent>
+   394→
+   395→          {/* Tab: Grafik Pertanian */}
+   396→          <TabsContent value="pertanian">
+   397→            <div className="grid lg:grid-cols-2 gap-6">
+   398→              <Card className="border-emerald-200">
+   399→                <CardHeader>
+   400→                  <CardTitle className="text-emerald-800 text-base">Komoditas Pertanian</CardTitle>
+   401→                </CardHeader>
+   402→                <CardContent>
+   403→                  <div className="space-y-4">
+   404→                    {[
+   405→                      { name: 'Kopi Robusta', area: '120 Ha', yield: '8.4 ton', pct: 35 },
+   406→                      { name: 'Padi Organik', area: '85 Ha', yield: '12.6 ton', pct: 25 },
+   407→                      { name: 'Cabai', area: '25 Ha', yield: '3.2 ton', pct: 15 },
+   408→                      { name: 'Nanas', area: '20 Ha', yield: '5.1 ton', pct: 12 },
+   409→                      { name: 'Lainnya', area: '50 Ha', yield: '4.8 ton', pct: 13 },
+   410→                    ].map((item, i) => (
+   411→                      <div key={i} className="p-3 bg-green-50 rounded-lg">
+   412→                        <div className="flex justify-between items-center mb-1">
+   413→                          <span className="font-medium text-sm text-green-900">{item.name}</span>
+   414→                          <Badge className="bg-green-200 text-green-800 text-[10px]">{item.pct}%</Badge>
+   415→                        </div>
+   416→                        <div className="flex gap-4 text-xs text-green-700">
+   417→                          <span>Luas: {item.area}</span>
+   418→                          <span>Hasil: {item.yield}</span>
+   419→                        </div>
+   420→                        <div className="w-full bg-green-100 rounded-full h-2 mt-2">
+   421→                          <div className="bg-green-500 h-2 rounded-full" style={{ width: `${item.pct}%` }} />
+   422→                        </div>
+   423→                      </div>
+   424→                    ))}
+   425→                  </div>
+   426→                </CardContent>
+   427→              </Card>
+   428→
+   429→              <Card className="border-emerald-200">
+   430→                <CardHeader>
+   431→                  <CardTitle className="text-emerald-800 text-base">Statistik Pertanian</CardTitle>
+   432→                </CardHeader>
+   433→                <CardContent>
+   434→                  <div className="space-y-4">
+   435→                    {[
+   436→                      { label: 'Total Lahan Pertanian', value: '300 Ha', icon: <Tractor className="h-4 w-4" /> },
+   437→                      { label: 'Petani Terdaftar', value: '285', icon: <Users className="h-4 w-4" /> },
+   438→                      { label: 'Kelompok Tani', value: '12', icon: <Users className="h-4 w-4" /> },
+   439→                      { label: 'Produksi Tahun Ini', value: '34.1 ton', icon: <TrendingUp className="h-4 w-4" /> },
+   440→                      { label: 'Pertanian Organik', value: '45%', icon: <Eye className="h-4 w-4" /> },
+   441→                      { label: 'Bantuan Terdistribusi', value: 'Rp 85 Jt', icon: <DollarSign className="h-4 w-4" /> },
+   442→                    ].map((item, i) => (
+   443→                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+   444→                        <div className="flex items-center gap-2">
+   445→                          <div className="text-green-600">{item.icon}</div>
+   446→                          <span className="text-sm text-gray-700">{item.label}</span>
+   447→                        </div>
+   448→                        <span className="font-bold text-gray-900">{item.value}</span>
+   449→                      </div>
+   450→                    ))}
+   451→                  </div>
+   452→                </CardContent>
+   453→              </Card>
+   454→            </div>
+   455→          </TabsContent>
+   456→        </Tabs>
+   457→
+   458→        {/* Contact Section */}
+   459→        <div className="mt-12 border-t pt-8">
+   460→          <h2 className="text-xl font-bold text-emerald-900 mb-4 flex items-center gap-2">
+   461→            <HeadphonesIcon className="h-5 w-5" /> Butuh Bantuan?
+   462→          </h2>
+   463→          <div className="grid sm:grid-cols-3 gap-4">
+   464→            <a href="https://wa.me/6285150859735" target="_blank" rel="noopener noreferrer"
+   465→              className="flex items-center gap-3 p-4 rounded-xl bg-green-50 hover:bg-green-100 border border-green-200 transition-colors">
+   466→              <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+   467→                <Phone className="h-5 w-5 text-white" />
+   468→              </div>
+   469→              <div>
+   470→                <p className="font-semibold text-green-800 text-sm">WhatsApp</p>
+   471→                <p className="text-xs text-green-600">085150859735</p>
+   472→              </div>
+   473→            </a>
+   474→            <a href="mailto:admin@desaairsempiang.id"
+   475→              className="flex items-center gap-3 p-4 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors">
+   476→              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+   477→                <Mail className="h-5 w-5 text-white" />
+   478→              </div>
+   479→              <div>
+   480→                <p className="font-semibold text-blue-800 text-sm">Email</p>
+   481→                <p className="text-xs text-blue-600">admin@desaairsempiang.id</p>
+   482→              </div>
+   483→            </a>
+   484→            <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer">
+   485→              <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center">
+   486→                <HelpCircle className="h-5 w-5 text-white" />
+   487→              </div>
+   488→              <div>
+   489→                <p className="font-semibold text-emerald-800 text-sm">FAQ</p>
+   490→                <p className="text-xs text-emerald-600">Pertanyaan umum</p>
+   491→              </div>
+   492→            </div>
+   493→          </div>
+   494→        </div>
+   495→      </div>
+   496→    </div>
+   497→  );
+   498→}
+   499→

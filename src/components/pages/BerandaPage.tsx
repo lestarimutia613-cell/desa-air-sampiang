@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,7 +29,8 @@ import {
 } from 'lucide-react';
 
 export default function BerandaPage() {
-  const { setCurrentPage, setChatOpen } = useAppStore();
+  const router = useRouter();
+  const { setChatOpen } = useAppStore();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [mapFilter, setMapFilter] = useState('semua');
   const [activeMarker, setActiveMarker] = useState<string | null>(null);
@@ -59,12 +61,12 @@ export default function BerandaPage() {
   }, [heroSlides.length]);
 
   const features = [
-    { icon: <GraduationCap className="h-7 w-7" />, title: 'Pendidikan', desc: 'Corporate University & literasi digital', page: 'corporate-university' as const },
-    { icon: <ShoppingBag className="h-7 w-7" />, title: 'Marketplace', desc: 'Jual beli produk UMKM & pertanian', page: 'marketplace' as const },
-    { icon: <Leaf className="h-7 w-7" />, title: 'Pertanian', desc: 'Pemberdayaan petani & akses pasar', page: 'layanan' as const },
-    { icon: <Users className="h-7 w-7" />, title: 'Kependudukan', desc: 'Administrasi & data monografi', page: 'kependudukan' as const },
+    { icon: <GraduationCap className="h-7 w-7" />, title: 'Pendidikan', desc: 'Corporate University & literasi digital', path: '/corporate-university' },
+    { icon: <ShoppingBag className="h-7 w-7" />, title: 'Marketplace', desc: 'Jual beli produk UMKM & pertanian', path: '/marketplace' },
+    { icon: <Leaf className="h-7 w-7" />, title: 'Pertanian', desc: 'Pemberdayaan petani & akses pasar', path: '/layanan' },
+    { icon: <Users className="h-7 w-7" />, title: 'Kependudukan', desc: 'Administrasi & data monografi', path: '/kependudukan' },
     { icon: <MessageCircle className="h-7 w-7" />, title: 'AI Chatbot', desc: 'Asisten virtual seputar desa', action: 'chat' },
-    { icon: <Landmark className="h-7 w-7" />, title: 'Layanan Desa', desc: 'Surat, izin & administrasi online', page: 'layanan' as const },
+    { icon: <Landmark className="h-7 w-7" />, title: 'Layanan Desa', desc: 'Surat, izin & administrasi online', path: '/layanan' },
   ];
 
   const topStats = [
@@ -121,7 +123,7 @@ export default function BerandaPage() {
               <Button
                 size="lg"
                 className="bg-white text-emerald-800 hover:bg-emerald-50 shadow-lg shadow-emerald-900/50 font-semibold"
-                onClick={() => setCurrentPage('marketplace')}
+                onClick={() => router.push('/marketplace')}
               >
                 <ShoppingBag className="mr-2 h-5 w-5" />
                 Marketplace Desa
@@ -187,7 +189,7 @@ export default function BerandaPage() {
               <h2 className="text-xl sm:text-2xl font-bold text-emerald-900">Layanan Desa Digital</h2>
               <p className="text-sm text-gray-500">Akses layanan desa secara digital</p>
             </div>
-            <Button variant="ghost" className="text-emerald-600 hover:text-emerald-800 text-sm" onClick={() => setCurrentPage('layanan')}>
+            <Button variant="ghost" className="text-emerald-600 hover:text-emerald-800 text-sm" onClick={() => router.push('/layanan')}>
               Lihat Semua <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
@@ -196,7 +198,7 @@ export default function BerandaPage() {
               <Card
                 key={i}
                 className="group cursor-pointer hover:shadow-lg transition-all border-emerald-50 hover:border-emerald-200 hover:-translate-y-1"
-                onClick={() => f.action === 'chat' ? setChatOpen(true) : setCurrentPage(f.page)}
+                onClick={() => f.action === 'chat' ? setChatOpen(true) : router.push(f.path)}
               >
                 <CardContent className="p-4 text-center">
                   <div className="w-12 h-12 bg-emerald-50 text-emerald-700 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-emerald-700 group-hover:text-white transition-colors shadow-sm">

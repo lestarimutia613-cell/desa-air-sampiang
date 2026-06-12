@@ -1,20 +1,5 @@
 import { create } from 'zustand';
 
-export type Page = 
-  | 'beranda' 
-  | 'layanan' 
-  | 'marketplace' 
-  | 'kependudukan' 
-  | 'corporate-university' 
-  | 'literasi' 
-  | 'konsol' 
-  | 'berita' 
-  | 'login'
-  | 'register'
-  | 'payment'
-  | 'order-history'
-  | 'product-detail';
-
 export interface CartItem {
   productId: string;
   name: string;
@@ -34,8 +19,6 @@ export interface User {
 }
 
 interface AppState {
-  currentPage: Page;
-  setCurrentPage: (page: Page) => void;
   user: User | null;
   setUser: (user: User | null) => void;
   cart: CartItem[];
@@ -58,8 +41,6 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
-  currentPage: 'beranda',
-  setCurrentPage: (page) => set({ currentPage: page }),
   user: null,
   setUser: (user) => set({ user }),
   cart: [],

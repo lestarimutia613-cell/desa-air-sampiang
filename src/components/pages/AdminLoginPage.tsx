@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +10,8 @@ import { Label } from '@/components/ui/label';
 import { Shield, User, Lock, ArrowLeft, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 export default function AdminLoginPage() {
-  const { setCurrentPage, setAdmin } = useAppStore();
+  const router = useRouter();
+  const { setAdmin } = useAppStore() as any;
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -40,7 +42,7 @@ export default function AdminLoginPage() {
       }
 
       setAdmin(data);
-      setCurrentPage('admin');
+      router.push('/admin');
     } catch {
       setError('Gagal terhubung ke server');
     } finally {
@@ -52,7 +54,7 @@ export default function AdminLoginPage() {
     <div className="py-12 min-h-[80vh] flex items-center justify-center">
       <div className="w-full max-w-md mx-auto px-4">
         <button
-          onClick={() => setCurrentPage('beranda')}
+          onClick={() => router.push('/')}
           className="flex items-center gap-2 text-emerald-600 hover:text-emerald-800 mb-6 text-sm font-medium"
         >
           <ArrowLeft className="h-4 w-4" /> Kembali ke Beranda

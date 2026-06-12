@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAppStore, CartItem } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,7 +22,8 @@ interface Product {
 }
 
 export default function MarketplacePage() {
-  const { user, cart, addToCart, removeFromCart, updateCartQuantity, clearCart, setCurrentPage, setPendingOrder, cartTotal } = useAppStore();
+  const router = useRouter();
+  const { user, cart, addToCart, removeFromCart, updateCartQuantity, clearCart, setPendingOrder, cartTotal } = useAppStore();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCart, setShowCart] = useState(false);
@@ -46,7 +48,7 @@ export default function MarketplacePage() {
 
   const handleAddToCart = (product: Product) => {
     if (!user) {
-      setCurrentPage('login');
+      router.push('/login');
       return;
     }
     addToCart({
@@ -61,7 +63,7 @@ export default function MarketplacePage() {
   const handleCheckout = () => {
     if (cart.length === 0) return;
     setPendingOrder({ items: [...cart], total: cartTotal() });
-    setCurrentPage('payment');
+    router.push('/payment');
   };
 
   const formatPrice = (price: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
@@ -286,7 +288,7 @@ export default function MarketplacePage() {
               <ShoppingBag className="h-8 w-8 text-amber-600 mx-auto mb-3" />
               <h3 className="font-bold text-amber-800 mb-2">Masuk untuk Berbelanja</h3>
               <p className="text-sm text-amber-700 mb-4">Anda perlu masuk atau mendaftar terlebih dahulu untuk berbelanja di marketplace UMKM desa</p>
-              <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => setCurrentPage('login')}>
+              <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => router.push('/login')}>
                 Masuk / Daftar
               </Button>
             </CardContent>

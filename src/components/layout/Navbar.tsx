@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useAppStore, Page } from '@/lib/store';
+import { useRouter, usePathname } from 'next/navigation';
+import { useAppStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
@@ -56,14 +57,14 @@ import {
 
 interface SubItem {
   label: string;
-  page: Page;
+  path: string;
   icon: React.ReactNode;
   section?: string;
 }
 
 interface NavItem {
   label: string;
-  page: Page;
+  path: string;
   icon: React.ReactNode;
   iconBg: string;
   subItems?: SubItem[];
@@ -72,118 +73,120 @@ interface NavItem {
 const navItems: NavItem[] = [
   {
     label: 'Beranda',
-    page: 'beranda',
+    path: '/',
     icon: <Home className="h-4 w-4" />,
     iconBg: 'bg-emerald-100 text-emerald-700',
     subItems: [
-      { label: 'Profil Desa', page: 'beranda', icon: <Building2 className="h-3.5 w-3.5" />, section: 'profil' },
-      { label: 'Visi & Misi', page: 'beranda', icon: <Target className="h-3.5 w-3.5" />, section: 'visi-misi' },
-      { label: 'Sejarah Desa', page: 'beranda', icon: <History className="h-3.5 w-3.5" />, section: 'sejarah' },
-      { label: 'Struktur Organisasi', page: 'beranda', icon: <Users className="h-3.5 w-3.5" />, section: 'struktur' },
-      { label: 'Peta Desa', page: 'beranda', icon: <MapPin className="h-3.5 w-3.5" />, section: 'peta' },
-      { label: 'Kontak Desa', page: 'beranda', icon: <Phone className="h-3.5 w-3.5" />, section: 'kontak' },
+      { label: 'Profil Desa', path: '/', icon: <Building2 className="h-3.5 w-3.5" />, section: 'profil' },
+      { label: 'Visi & Misi', path: '/', icon: <Target className="h-3.5 w-3.5" />, section: 'visi-misi' },
+      { label: 'Sejarah Desa', path: '/', icon: <History className="h-3.5 w-3.5" />, section: 'sejarah' },
+      { label: 'Struktur Organisasi', path: '/', icon: <Users className="h-3.5 w-3.5" />, section: 'struktur' },
+      { label: 'Peta Desa', path: '/', icon: <MapPin className="h-3.5 w-3.5" />, section: 'peta' },
+      { label: 'Kontak Desa', path: '/', icon: <Phone className="h-3.5 w-3.5" />, section: 'kontak' },
     ],
   },
   {
     label: 'Layanan Desa',
-    page: 'layanan',
+    path: '/layanan',
     icon: <Landmark className="h-4 w-4" />,
     iconBg: 'bg-purple-100 text-purple-700',
     subItems: [
-      { label: 'Surat Keterangan Domisili', page: 'layanan', icon: <ScrollText className="h-3.5 w-3.5" /> },
-      { label: 'Surat Pengantar', page: 'layanan', icon: <Send className="h-3.5 w-3.5" /> },
-      { label: 'Surat Kelahiran', page: 'layanan', icon: <Baby className="h-3.5 w-3.5" /> },
-      { label: 'Surat Kematian', page: 'layanan', icon: <Heart className="h-3.5 w-3.5" /> },
-      { label: 'Surat Keterangan Usaha', page: 'layanan', icon: <ShoppingBag className="h-3.5 w-3.5" /> },
-      { label: 'Surat Keterangan Tidak Mampu', page: 'layanan', icon: <ShieldCheck className="h-3.5 w-3.5" /> },
-      { label: 'Surat Keterangan Sehat', page: 'layanan', icon: <Stethoscope className="h-3.5 w-3.5" /> },
-      { label: 'Surat Pengantar SKCK', page: 'layanan', icon: <Scale className="h-3.5 w-3.5" /> },
-      { label: 'Surat Pindah Domisili', page: 'layanan', icon: <Truck className="h-3.5 w-3.5" /> },
-      { label: 'Surat Keterangan Lainnya', page: 'layanan', icon: <FileText className="h-3.5 w-3.5" /> },
-      { label: 'Pengajuan Online', page: 'layanan', icon: <ClipboardList className="h-3.5 w-3.5" /> },
-      { label: 'Tracking Pengajuan', page: 'layanan', icon: <Search className="h-3.5 w-3.5" /> },
+      { label: 'Surat Keterangan Domisili', path: '/layanan', icon: <ScrollText className="h-3.5 w-3.5" /> },
+      { label: 'Surat Pengantar', path: '/layanan', icon: <Send className="h-3.5 w-3.5" /> },
+      { label: 'Surat Kelahiran', path: '/layanan', icon: <Baby className="h-3.5 w-3.5" /> },
+      { label: 'Surat Kematian', path: '/layanan', icon: <Heart className="h-3.5 w-3.5" /> },
+      { label: 'Surat Keterangan Usaha', path: '/layanan', icon: <ShoppingBag className="h-3.5 w-3.5" /> },
+      { label: 'Surat Keterangan Tidak Mampu', path: '/layanan', icon: <ShieldCheck className="h-3.5 w-3.5" /> },
+      { label: 'Surat Keterangan Sehat', path: '/layanan', icon: <Stethoscope className="h-3.5 w-3.5" /> },
+      { label: 'Surat Pengantar SKCK', path: '/layanan', icon: <Scale className="h-3.5 w-3.5" /> },
+      { label: 'Surat Pindah Domisili', path: '/layanan', icon: <Truck className="h-3.5 w-3.5" /> },
+      { label: 'Surat Keterangan Lainnya', path: '/layanan', icon: <FileText className="h-3.5 w-3.5" /> },
+      { label: 'Pengajuan Online', path: '/layanan', icon: <ClipboardList className="h-3.5 w-3.5" /> },
+      { label: 'Tracking Pengajuan', path: '/layanan', icon: <Search className="h-3.5 w-3.5" /> },
     ],
   },
   {
     label: 'Marketplace',
-    page: 'marketplace',
+    path: '/marketplace',
     icon: <ShoppingBag className="h-4 w-4" />,
     iconBg: 'bg-orange-100 text-orange-700',
     subItems: [
-      { label: 'Produk UMKM', page: 'marketplace', icon: <ShoppingCartIcon className="h-3.5 w-3.5" /> },
+      { label: 'Produk UMKM', path: '/marketplace', icon: <ShoppingCartIcon className="h-3.5 w-3.5" /> },
     ],
   },
   {
     label: 'Kependudukan',
-    page: 'kependudukan',
+    path: '/kependudukan',
     icon: <Users className="h-4 w-4" />,
     iconBg: 'bg-blue-100 text-blue-700',
     subItems: [
-      { label: 'Data Penduduk', page: 'kependudukan', icon: <Users className="h-3.5 w-3.5" /> },
-      { label: 'Statistik Penduduk', page: 'kependudukan', icon: <BarChart3 className="h-3.5 w-3.5" /> },
-      { label: 'Kelahiran', page: 'kependudukan', icon: <Baby className="h-3.5 w-3.5" /> },
-      { label: 'Kematian', page: 'kependudukan', icon: <Heart className="h-3.5 w-3.5" /> },
-      { label: 'Pendatang', page: 'kependudukan', icon: <UserCheck className="h-3.5 w-3.5" /> },
-      { label: 'Migrasi Penduduk', page: 'kependudukan', icon: <TrendingUp className="h-3.5 w-3.5" /> },
+      { label: 'Data Penduduk', path: '/kependudukan', icon: <Users className="h-3.5 w-3.5" /> },
+      { label: 'Statistik Penduduk', path: '/kependudukan', icon: <BarChart3 className="h-3.5 w-3.5" /> },
+      { label: 'Kelahiran', path: '/kependudukan', icon: <Baby className="h-3.5 w-3.5" /> },
+      { label: 'Kematian', path: '/kependudukan', icon: <Heart className="h-3.5 w-3.5" /> },
+      { label: 'Pendatang', path: '/kependudukan', icon: <UserCheck className="h-3.5 w-3.5" /> },
+      { label: 'Migrasi Penduduk', path: '/kependudukan', icon: <TrendingUp className="h-3.5 w-3.5" /> },
     ],
   },
   {
     label: 'Corporate University',
-    page: 'corporate-university',
+    path: '/corporate-university',
     icon: <GraduationCap className="h-4 w-4" />,
     iconBg: 'bg-cyan-100 text-cyan-700',
     subItems: [
-      { label: 'Pelatihan Digital', page: 'corporate-university', icon: <Monitor className="h-3.5 w-3.5" /> },
-      { label: 'Pelatihan UMKM', page: 'corporate-university', icon: <ShoppingBag className="h-3.5 w-3.5" /> },
-      { label: 'Pelatihan Pertanian', page: 'corporate-university', icon: <Sprout className="h-3.5 w-3.5" /> },
-      { label: 'Video Pembelajaran', page: 'corporate-university', icon: <Video className="h-3.5 w-3.5" /> },
-      { label: 'Sertifikat Pelatihan', page: 'corporate-university', icon: <Award className="h-3.5 w-3.5" /> },
+      { label: 'Pelatihan Digital', path: '/corporate-university', icon: <Monitor className="h-3.5 w-3.5" /> },
+      { label: 'Pelatihan UMKM', path: '/corporate-university', icon: <ShoppingBag className="h-3.5 w-3.5" /> },
+      { label: 'Pelatihan Pertanian', path: '/corporate-university', icon: <Sprout className="h-3.5 w-3.5" /> },
+      { label: 'Video Pembelajaran', path: '/corporate-university', icon: <Video className="h-3.5 w-3.5" /> },
+      { label: 'Sertifikat Pelatihan', path: '/corporate-university', icon: <Award className="h-3.5 w-3.5" /> },
     ],
   },
   {
     label: 'Literasi Digital',
-    page: 'literasi',
+    path: '/literasi',
     icon: <BookOpen className="h-4 w-4" />,
     iconBg: 'bg-indigo-100 text-indigo-700',
     subItems: [
-      { label: 'Artikel Edukasi', page: 'literasi', icon: <FileText className="h-3.5 w-3.5" /> },
-      { label: 'E-Book', page: 'literasi', icon: <BookOpenCheck className="h-3.5 w-3.5" /> },
-      { label: 'Modul Pembelajaran', page: 'literasi', icon: <Laptop className="h-3.5 w-3.5" /> },
-      { label: 'Video Tutorial', page: 'literasi', icon: <Video className="h-3.5 w-3.5" /> },
-      { label: 'Literasi Keuangan', page: 'literasi', icon: <Coins className="h-3.5 w-3.5" /> },
+      { label: 'Artikel Edukasi', path: '/literasi', icon: <FileText className="h-3.5 w-3.5" /> },
+      { label: 'E-Book', path: '/literasi', icon: <BookOpenCheck className="h-3.5 w-3.5" /> },
+      { label: 'Modul Pembelajaran', path: '/literasi', icon: <Laptop className="h-3.5 w-3.5" /> },
+      { label: 'Video Tutorial', path: '/literasi', icon: <Video className="h-3.5 w-3.5" /> },
+      { label: 'Literasi Keuangan', path: '/literasi', icon: <Coins className="h-3.5 w-3.5" /> },
     ],
   },
   {
     label: 'Console',
-    page: 'konsol',
+    path: '/konsol',
     icon: <BarChart3 className="h-4 w-4" />,
     iconBg: 'bg-teal-100 text-teal-700',
     subItems: [
-      { label: 'Statistik Desa', page: 'konsol', icon: <BarChart3 className="h-3.5 w-3.5" /> },
-      { label: 'Monitoring Layanan', page: 'konsol', icon: <Eye className="h-3.5 w-3.5" /> },
-      { label: 'Analitik Pengunjung', page: 'konsol', icon: <TrendingUp className="h-3.5 w-3.5" /> },
-      { label: 'Grafik Kependudukan', page: 'konsol', icon: <Users className="h-3.5 w-3.5" /> },
-      { label: 'Grafik UMKM', page: 'konsol', icon: <ShoppingBag className="h-3.5 w-3.5" /> },
-      { label: 'Grafik Pertanian', page: 'konsol', icon: <Sprout className="h-3.5 w-3.5" /> },
+      { label: 'Statistik Desa', path: '/konsol', icon: <BarChart3 className="h-3.5 w-3.5" /> },
+      { label: 'Monitoring Layanan', path: '/konsol', icon: <Eye className="h-3.5 w-3.5" /> },
+      { label: 'Analitik Pengunjung', path: '/konsol', icon: <TrendingUp className="h-3.5 w-3.5" /> },
+      { label: 'Grafik Kependudukan', path: '/konsol', icon: <Users className="h-3.5 w-3.5" /> },
+      { label: 'Grafik UMKM', path: '/konsol', icon: <ShoppingBag className="h-3.5 w-3.5" /> },
+      { label: 'Grafik Pertanian', path: '/konsol', icon: <Sprout className="h-3.5 w-3.5" /> },
     ],
   },
   {
     label: 'Berita',
-    page: 'berita',
+    path: '/berita',
     icon: <Newspaper className="h-4 w-4" />,
     iconBg: 'bg-rose-100 text-rose-700',
     subItems: [
-      { label: 'Berita Desa', page: 'berita', icon: <Newspaper className="h-3.5 w-3.5" /> },
-      { label: 'Pengumuman', page: 'berita', icon: <Megaphone className="h-3.5 w-3.5" /> },
-      { label: 'Agenda Desa', page: 'berita', icon: <Calendar className="h-3.5 w-3.5" /> },
-      { label: 'Kegiatan Masyarakat', page: 'berita', icon: <Users className="h-3.5 w-3.5" /> },
-      { label: 'Dokumentasi Kegiatan', page: 'berita', icon: <Camera className="h-3.5 w-3.5" /> },
+      { label: 'Berita Desa', path: '/berita', icon: <Newspaper className="h-3.5 w-3.5" /> },
+      { label: 'Pengumuman', path: '/berita', icon: <Megaphone className="h-3.5 w-3.5" /> },
+      { label: 'Agenda Desa', path: '/berita', icon: <Calendar className="h-3.5 w-3.5" /> },
+      { label: 'Kegiatan Masyarakat', path: '/berita', icon: <Users className="h-3.5 w-3.5" /> },
+      { label: 'Dokumentasi Kegiatan', path: '/berita', icon: <Camera className="h-3.5 w-3.5" /> },
     ],
   },
 ];
 
 export default function Navbar() {
-  const { currentPage, setCurrentPage, user, setUser, cart, setMobileMenuOpen, mobileMenuOpen, clearCart } = useAppStore();
+  const router = useRouter();
+  const pathname = usePathname();
+  const { user, setUser, cart, setMobileMenuOpen, mobileMenuOpen, clearCart } = useAppStore();
   const [scrolled, setScrolled] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -208,11 +211,11 @@ export default function Navbar() {
   const handleLogout = () => {
     setUser(null);
     clearCart();
-    setCurrentPage('beranda');
+    router.push('/');
   };
 
-  const handleNav = (page: Page, section?: string) => {
-    setCurrentPage(page);
+  const handleNav = (path: string, section?: string) => {
+    router.push(path);
     setMobileMenuOpen(false);
     setOpenDropdown(null);
     window.scrollTo(0, 0);
@@ -222,6 +225,12 @@ export default function Navbar() {
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 300);
     }
+  };
+
+  // Helper to determine if a nav item is active based on the current pathname
+  const isActive = (itemPath: string) => {
+    if (itemPath === '/') return pathname === '/';
+    return pathname === itemPath || pathname.startsWith(itemPath + '/');
   };
 
   const handleMouseEnter = (label: string) => {
@@ -245,7 +254,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-14">
           {/* Logo */}
           <button
-            onClick={() => handleNav('beranda')}
+            onClick={() => handleNav('/')}
             className="flex items-center gap-2 hover:opacity-90 transition-opacity shrink-0"
           >
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
@@ -273,9 +282,9 @@ export default function Navbar() {
                 onMouseLeave={handleMouseLeave}
               >
                 <button
-                  onClick={() => handleNav(item.page)}
+                  onClick={() => handleNav(item.path)}
                   className={`flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium transition-all ${
-                    currentPage === item.page
+                    isActive(item.path)
                       ? scrolled
                         ? 'bg-emerald-100 text-emerald-800'
                         : 'bg-white/20 text-white'
@@ -306,7 +315,7 @@ export default function Navbar() {
                       {item.subItems.map((sub, i) => (
                         <button
                           key={i}
-                          onClick={() => handleNav(sub.page, sub.section)}
+                          onClick={() => handleNav(sub.path, sub.section)}
                           className={`flex items-center gap-2.5 w-full px-3 py-2 text-xs transition-colors ${
                             scrolled
                               ? 'text-gray-700 hover:bg-emerald-50 hover:text-emerald-800'
@@ -329,7 +338,7 @@ export default function Navbar() {
             {/* Cart */}
             {user && (
               <button
-                onClick={() => handleNav('marketplace')}
+                onClick={() => handleNav('/marketplace')}
                 className={`relative flex items-center px-2 py-1.5 rounded-md text-[11px] font-medium transition-all ${
                   scrolled ? 'text-emerald-700 hover:bg-emerald-50' : 'text-emerald-100 hover:bg-white/10'
                 }`}
@@ -358,7 +367,7 @@ export default function Navbar() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => handleNav('login')}
+                onClick={() => handleNav('/login')}
                 className={`text-[11px] h-8 px-2 ${scrolled ? 'text-emerald-700 hover:bg-emerald-50' : 'text-white hover:bg-white/10'}`}
               >
                 <LogIn className="h-3.5 w-3.5 mr-1" />
@@ -382,9 +391,9 @@ export default function Navbar() {
                   {navItems.map((item) => (
                     <div key={item.label}>
                       <button
-                        onClick={() => handleNav(item.page)}
+                        onClick={() => handleNav(item.path)}
                         className={`flex items-center gap-3 w-full px-4 py-3 text-sm font-semibold transition-all ${
-                          currentPage === item.page
+                          isActive(item.path)
                             ? 'bg-emerald-50 text-emerald-800'
                             : 'text-gray-800 hover:bg-gray-50'
                         }`}
@@ -399,7 +408,7 @@ export default function Navbar() {
                           {item.subItems.map((sub, i) => (
                             <button
                               key={i}
-                              onClick={() => handleNav(sub.page, sub.section)}
+                              onClick={() => handleNav(sub.path, sub.section)}
                               className="flex items-center gap-2 w-full px-3 py-1.5 text-xs text-gray-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-md transition-colors"
                             >
                               {sub.icon}
@@ -414,7 +423,7 @@ export default function Navbar() {
                   {user ? (
                     <>
                       <button
-                        onClick={() => { handleNav('order-history'); }}
+                        onClick={() => { handleNav('/order-history'); }}
                         className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50"
                       >
                         <Package className="h-4 w-4" /> Riwayat Pesanan
@@ -428,7 +437,7 @@ export default function Navbar() {
                     </>
                   ) : (
                     <button
-                      onClick={() => handleNav('login')}
+                      onClick={() => handleNav('/login')}
                       className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
                     >
                       <LogIn className="h-4 w-4" /> Masuk / Daftar

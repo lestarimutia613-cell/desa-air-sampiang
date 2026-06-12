@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -42,7 +43,8 @@ interface Order {
 }
 
 export default function AdminPage() {
-  const { admin, setAdmin, setCurrentPage } = useAppStore();
+  const router = useRouter();
+  const { admin, setAdmin } = useAppStore() as any;
   const [stats, setStats] = useState<any>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,7 +70,7 @@ export default function AdminPage() {
             <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
             <h2 className="font-bold text-gray-900 mb-2">Akses Ditolak</h2>
             <p className="text-gray-600 text-sm mb-4">Silakan login sebagai admin terlebih dahulu</p>
-            <Button onClick={() => setCurrentPage('admin-login')} className="bg-orange-600 hover:bg-orange-700">
+            <Button onClick={() => router.push('/admin/login')} className="bg-orange-600 hover:bg-orange-700">
               Login Admin
             </Button>
           </CardContent>
@@ -79,7 +81,7 @@ export default function AdminPage() {
 
   const handleAdminLogout = () => {
     setAdmin(null);
-    setCurrentPage('beranda');
+    router.push('/');
   };
 
   const formatPrice = (price: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +22,8 @@ import {
 } from 'lucide-react';
 
 export default function PaymentPage() {
-  const { user, pendingOrder, setCurrentPage, clearCart } = useAppStore();
+  const router = useRouter();
+  const { user, pendingOrder, clearCart } = useAppStore();
   const [paymentMethod, setPaymentMethod] = useState('BANK_BRI');
   const [buyerName, setBuyerName] = useState(user?.name || '');
   const [buyerPhone, setBuyerPhone] = useState(user?.phone || '');
@@ -37,7 +39,7 @@ export default function PaymentPage() {
         <Card className="max-w-md">
           <CardContent className="p-6 text-center">
             <p className="text-gray-600 mb-4">Tidak ada pesanan yang sedang diproses</p>
-            <Button onClick={() => setCurrentPage('marketplace')} className="bg-emerald-600 hover:bg-emerald-700">
+            <Button onClick={() => router.push('/marketplace')} className="bg-emerald-600 hover:bg-emerald-700">
               Kembali ke Marketplace
             </Button>
           </CardContent>
@@ -306,7 +308,7 @@ Kec. Kabawetan, Kab. Kepahiang, Bengkulu`;
             </Button>
             <Button
               className="w-full bg-emerald-600 hover:bg-emerald-700 py-4"
-              onClick={() => setCurrentPage('beranda')}
+              onClick={() => router.push('/')}
             >
               Kembali ke Beranda
             </Button>
@@ -321,7 +323,7 @@ Kec. Kabawetan, Kab. Kepahiang, Bengkulu`;
     <div className="py-12">
       <div className="max-w-2xl mx-auto px-4">
         <button
-          onClick={() => setCurrentPage('marketplace')}
+          onClick={() => router.push('/marketplace')}
           className="flex items-center gap-2 text-emerald-600 hover:text-emerald-800 mb-6 text-sm font-medium"
         >
           <ArrowLeft className="h-4 w-4" /> Kembali ke Marketplace

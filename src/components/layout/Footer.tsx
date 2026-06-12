@@ -1,16 +1,9 @@
 'use client';
 
-import { useAppStore, Page } from '@/lib/store';
+import Link from 'next/link';
 import { Phone, Mail, MapPin } from 'lucide-react';
 
 export default function Footer() {
-  const { setCurrentPage } = useAppStore();
-
-  const handleNav = (page: Page) => {
-    setCurrentPage(page);
-    window.scrollTo(0, 0);
-  };
-
   return (
     <footer className="bg-emerald-900 text-white mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -44,22 +37,22 @@ export default function Footer() {
             <h3 className="text-lg font-bold mb-4">Tautan Cepat</h3>
             <nav className="space-y-2 text-sm text-emerald-300">
               {[
-                { label: 'Beranda', page: 'beranda' as Page },
-                { label: 'Layanan Desa', page: 'layanan' as Page },
-                { label: 'Marketplace', page: 'marketplace' as Page },
-                { label: 'Kependudukan', page: 'kependudukan' as Page },
-                { label: 'Corporate University', page: 'corporate-university' as Page },
-                { label: 'Literasi Digital', page: 'literasi' as Page },
-                { label: 'Console', page: 'konsol' as Page },
-                { label: 'Berita', page: 'berita' as Page },
+                { label: 'Beranda', href: '/' },
+                { label: 'Layanan Desa', href: '/layanan' },
+                { label: 'Marketplace', href: '/marketplace' },
+                { label: 'Kependudukan', href: '/kependudukan' },
+                { label: 'Corporate University', href: '/corporate-university' },
+                { label: 'Literasi Digital', href: '/literasi' },
+                { label: 'Console', href: '/konsol' },
+                { label: 'Berita', href: '/berita' },
               ].map((item) => (
-                <button
-                  key={item.page}
-                  onClick={() => handleNav(item.page)}
+                <Link
+                  key={item.href}
+                  href={item.href}
                   className="block hover:text-white transition-colors"
                 >
                   {item.label}
-                </button>
+                </Link>
               ))}
             </nav>
           </div>

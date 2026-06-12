@@ -1,12 +1,12 @@
 'use client';
 
 import PublicLayout from '@/components/layout/PublicLayout';
-import BerandaPage from '@/components/pages/BerandaPage';
+import LoginPage from '@/components/pages/LoginPage';
 
-export default function Home() {
+export default function LoginRoute() {
   return (
     <PublicLayout>
-      <BerandaPage />
+      <LoginPage />
     </PublicLayout>
   );
 }

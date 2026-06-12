@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { LogIn, UserPlus, Mail, Lock, User, Phone, MapPin } from 'lucide-react';
 
 export default function LoginPage() {
-  const { setUser, setCurrentPage } = useAppStore();
+  const router = useRouter();
+  const { setUser } = useAppStore();
   const [isRegister, setIsRegister] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -45,7 +47,7 @@ export default function LoginPage() {
       }
 
       setUser(data);
-      setCurrentPage('beranda');
+      router.push('/');
     } catch {
       setError('Gagal terhubung ke server');
     } finally {
