@@ -21,6 +21,8 @@ interface NewsItem {
   image: string | null;
   author: string;
   sort_order: number;
+  created_at?: string;
+  createdAt?: string;
 }
 
 const defaultForm = { title: '', content: '', image: '', author: 'Admin Desa' };

@@ -198,7 +198,7 @@ export default function BerandaPage() {
               <Card
                 key={i}
                 className="group cursor-pointer hover:shadow-lg transition-all border-emerald-50 hover:border-emerald-200 hover:-translate-y-1"
-                onClick={() => f.action === 'chat' ? setChatOpen(true) : router.push(f.path)}
+                onClick={() => f.action === 'chat' ? setChatOpen(true) : f.path && router.push(f.path)}
               >
                 <CardContent className="p-4 text-center">
                   <div className="w-12 h-12 bg-emerald-50 text-emerald-700 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-emerald-700 group-hover:text-white transition-colors shadow-sm">
