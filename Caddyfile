@@ -18,6 +18,16 @@
 			header_up X-Forwarded-For {remote_host}
 			header_up X-Forwarded-Proto {scheme}
 			header_up X-Real-IP {remote_host}
+			
+			# Retry on connection failure (server restarting)
+			transport http {
+				read_timeout 30s
+				write_timeout 30s
+				dial_timeout 5s
+			}
+			
+			# Try to retry on 502
+			fail_duration 5s
 		}
 	}
 }
