@@ -4,15 +4,15 @@ import { createHash } from 'crypto';
 const prisma = new PrismaClient();
 
 async function main() {
-  // Create admin user with username "admin" and password "admin123"
+  // Create admin user with username "admindesa" and password "admin123"
   const adminPassword = 'admin123';
   const hashedAdminPw = createHash('sha256').update(adminPassword).digest('hex');
   
   await prisma.admin.upsert({
-    where: { username: 'admin' },
+    where: { username: 'admindesa' },
     update: {},
     create: {
-      username: 'admin',
+      username: 'admindesa',
       email: 'admin@desaairsempiang.id',
       name: 'Admin Desa',
       password: hashedAdminPw,
@@ -122,7 +122,7 @@ async function main() {
   }
 
   console.log('✅ Seed data inserted successfully!');
-  console.log('📋 Admin login: username=admin, password=admin123');
+  console.log('📋 Admin login: username=admindesa, password=admin123');
 }
 
 main()

@@ -1,0 +1,891 @@
+     1→'use client';
+     2→
+     3→import { useState, useEffect } from 'react';
+     4→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+     5→import { Badge } from '@/components/ui/badge';
+     6→import { Button } from '@/components/ui/button';
+     7→import { Input } from '@/components/ui/input';
+     8→import { Label } from '@/components/ui/label';
+     9→import { Textarea } from '@/components/ui/textarea';
+    10→import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+    11→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+    12→import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+    13→import {
+    14→  FileText,
+    15→  ClipboardList,
+    16→  Building,
+    17→  Tractor,
+    18→  GraduationCap,
+    19→  MoreHorizontal,
+    20→  HeadphonesIcon,
+    21→  Phone,
+    22→  MessageCircle,
+    23→  Mail,
+    24→  Clock,
+    25→  HelpCircle,
+    26→  ShieldCheck,
+    27→  ScrollText,
+    28→  Send,
+    29→  Baby,
+    30→  Heart,
+    31→  ShoppingBag,
+    32→  Stethoscope,
+    33→  Scale,
+    34→  Truck,
+    35→  User,
+    36→  MapPin,
+    37→  Calendar,
+    38→  Home,
+    39→  Briefcase,
+    40→  AlertCircle,
+    41→  CheckCircle2,
+    42→  Loader2,
+    43→  ArrowLeft,
+    44→  Landmark,
+    45→} from 'lucide-react';
+    46→
+    47→interface Service {
+    48→  id: string;
+    49→  name: string;
+    50→  description: string;
+    51→  category: string;
+    52→  requirements: string | null;
+    53→}
+    54→
+    55→const categoryIcons: Record<string, React.ReactNode> = {
+    56→  'KEPENDUDUKAN': <ClipboardList className="h-5 w-5" />,
+    57→  'SURAT': <FileText className="h-5 w-5" />,
+    58→  'UMKM': <Building className="h-5 w-5" />,
+    59→  'PERTANIAN': <Tractor className="h-5 w-5" />,
+    60→  'PENDIDIKAN': <GraduationCap className="h-5 w-5" />,
+    61→  'LAINNYA': <MoreHorizontal className="h-5 w-5" />,
+    62→};
+    63→
+    64→const categoryColors: Record<string, string> = {
+    65→  'KEPENDUDUKAN': 'bg-blue-100 text-blue-800',
+    66→  'SURAT': 'bg-purple-100 text-purple-800',
+    67→  'UMKM': 'bg-orange-100 text-orange-800',
+    68→  'PERTANIAN': 'bg-green-100 text-green-800',
+    69→  'PENDIDIKAN': 'bg-cyan-100 text-cyan-800',
+    70→  'LAINNYA': 'bg-gray-100 text-gray-800',
+    71→};
+    72→
+    73→// Form configurations for each service type
+    74→interface FormField {
+    75→  name: string;
+    76→  label: string;
+    77→  type: 'text' | 'date' | 'textarea' | 'select' | 'number';
+    78→  placeholder?: string;
+    79→  required?: boolean;
+    80→  options?: { value: string; label: string }[];
+    81→}
+    82→
+    83→interface ServiceFormConfig {
+    84→  serviceId: string;
+    85→  title: string;
+    86→  description: string;
+    87→  icon: React.ReactNode;
+    88→  iconBg: string;
+    89→  fields: FormField[];
+    90→  exampleData: Record<string, string>;
+    91→}
+    92→
+    93→const serviceFormConfigs: ServiceFormConfig[] = [
+    94→  {
+    95→    serviceId: 'surat-domisili',
+    96→    title: 'Surat Keterangan Domisili',
+    97→    description: 'Surat keterangan tempat tinggal yang diterbitkan oleh pemerintah desa untuk keperluan administrasi, pekerjaan, atau pendidikan.',
+    98→    icon: <ScrollText className="h-6 w-6" />,
+    99→    iconBg: 'bg-purple-100 text-purple-700',
+   100→    fields: [
+   101→      { name: 'namaLengkap', label: 'Nama Lengkap', type: 'text', placeholder: 'Contoh: Ahmad Fauzi', required: true },
+   102→      { name: 'nik', label: 'NIK', type: 'text', placeholder: '16 digit NIK', required: true },
+   103→      { name: 'tempatLahir', label: 'Tempat Lahir', type: 'text', placeholder: 'Contoh: Kepahiang', required: true },
+   104→      { name: 'tanggalLahir', label: 'Tanggal Lahir', type: 'date', required: true },
+   105→      { name: 'jenisKelamin', label: 'Jenis Kelamin', type: 'select', required: true, options: [{ value: 'L', label: 'Laki-laki' }, { value: 'P', label: 'Perempuan' }] },
+   106→      { name: 'agama', label: 'Agama', type: 'select', required: true, options: [{ value: 'Islam', label: 'Islam' }, { value: 'Kristen', label: 'Kristen' }, { value: 'Katolik', label: 'Katolik' }, { value: 'Hindu', label: 'Hindu' }, { value: 'Buddha', label: 'Buddha' }, { value: 'Konghucu', label: 'Konghucu' }] },
+   107→      { name: 'statusPerkawinan', label: 'Status Perkawinan', type: 'select', required: true, options: [{ value: 'Belum Kawin', label: 'Belum Kawin' }, { value: 'Kawin', label: 'Kawin' }, { value: 'Cerai Hidup', label: 'Cerai Hidup' }, { value: 'Cerai Mati', label: 'Cerai Mati' }] },
+   108→      { name: 'pekerjaan', label: 'Pekerjaan', type: 'text', placeholder: 'Contoh: Petani', required: true },
+   109→      { name: 'alamatDomisili', label: 'Alamat Domisili Saat Ini', type: 'textarea', placeholder: 'Contoh: Jl. Merdeka No. 10, RT 03/RW 02, Desa Air Sempiang', required: true },
+   110→      { name: 'lamaTinggal', label: 'Lama Tinggal', type: 'text', placeholder: 'Contoh: 5 Tahun', required: true },
+   111→      { name: 'keperluan', label: 'Keperluan Surat', type: 'text', placeholder: 'Contoh: Untuk melamar pekerjaan', required: true },
+   112→    ],
+   113→    exampleData: {
+   114→      namaLengkap: 'Ahmad Fauzi',
+   115→      nik: '1705060101980001',
+   116→      tempatLahir: 'Kepahiang',
+   117→      tanggalLahir: '1998-01-01',
+   118→      jenisKelamin: 'L',
+   119→      agama: 'Islam',
+   120→      statusPerkawinan: 'Kawin',
+   121→      pekerjaan: 'Petani',
+   122→      alamatDomisili: 'Jl. Merdeka No. 10, RT 03/RW 02, Desa Air Sempiang, Kec. Kabawetan, Kab. Kepahiang',
+   123→      lamaTinggal: '5 Tahun',
+   124→      keperluan: 'Untuk melamar pekerjaan di PT. Bengkulu Sejahtera',
+   125→    },
+   126→  },
+   127→  {
+   128→    serviceId: 'surat-pengantar',
+   129→    title: 'Surat Pengantar',
+   130→    description: 'Surat pengantar dari pemerintah desa untuk mengurus berbagai keperluan administrasi di instansi terkait.',
+   131→    icon: <Send className="h-6 w-6" />,
+   132→    iconBg: 'bg-blue-100 text-blue-700',
+   133→    fields: [
+   134→      { name: 'namaLengkap', label: 'Nama Lengkap', type: 'text', placeholder: 'Contoh: Siti Nurhaliza', required: true },
+   135→      { name: 'nik', label: 'NIK', type: 'text', placeholder: '16 digit NIK', required: true },
+   136→      { name: 'tempatLahir', label: 'Tempat Lahir', type: 'text', placeholder: 'Contoh: Bengkulu', required: true },
+   137→      { name: 'tanggalLahir', label: 'Tanggal Lahir', type: 'date', required: true },
+   138→      { name: 'pekerjaan', label: 'Pekerjaan', type: 'text', placeholder: 'Contoh: Wiraswasta', required: true },
+   139→      { name: 'alamat', label: 'Alamat', type: 'textarea', placeholder: 'Alamat lengkap sesuai KTP', required: true },
+   140→      { name: 'tujuanSurat', label: 'Tujuan Surat Pengantar', type: 'select', required: true, options: [
+   141→        { value: 'Pengurusan KTP', label: 'Pengurusan KTP' },
+   142→        { value: 'Pengurusan KK', label: 'Pengurusan KK' },
+   143→        { value: 'Pengurusan SKCK', label: 'Pengurusan SKCK' },
+   144→        { value: 'Pengurusan Paspor', label: 'Pengurusan Paspor' },
+   145→        { value: 'Lainnya', label: 'Lainnya' },
+   146→      ]},
+   147→      { name: 'keperluan', label: 'Keperluan', type: 'textarea', placeholder: 'Jelaskan keperluan Anda secara detail', required: true },
+   148→    ],
+   149→    exampleData: {
+   150→      namaLengkap: 'Siti Nurhaliza',
+   151→      nik: '1705060203950002',
+   152→      tempatLahir: 'Bengkulu',
+   153→      tanggalLahir: '1995-03-02',
+   154→      pekerjaan: 'Wiraswasta',
+   155→      alamat: 'Jl. Raya Air Sempiang No. 5, RT 01/RW 01, Desa Air Sempiang',
+   156→      tujuanSurat: 'Pengurusan SKCK',
+   157→      keperluan: 'Untuk melengkapi persyaratan pendaftaran lowongan kerja di perusahaan swasta',
+   158→    },
+   159→  },
+   160→  {
+   161→    serviceId: 'surat-kelahiran',
+   162→    title: 'Surat Kelahiran',
+   163→    description: 'Surat keterangan kelahiran yang diterbitkan oleh pemerintah desa sebagai dokumen resmi pencatatan kelahiran.',
+   164→    icon: <Baby className="h-6 w-6" />,
+   165→    iconBg: 'bg-pink-100 text-pink-700',
+   166→    fields: [
+   167→      { name: 'namaBayi', label: 'Nama Bayi', type: 'text', placeholder: 'Contoh: Muhammad Rizki', required: true },
+   168→      { name: 'jenisKelaminBayi', label: 'Jenis Kelamin Bayi', type: 'select', required: true, options: [{ value: 'L', label: 'Laki-laki' }, { value: 'P', label: 'Perempuan' }] },
+   169→      { name: 'tanggalLahirBayi', label: 'Tanggal Lahir Bayi', type: 'date', required: true },
+   170→      { name: 'tempatLahirBayi', label: 'Tempat Lahir Bayi', type: 'text', placeholder: 'Contoh: RSUD Kepahiang', required: true },
+   171→      { name: 'namaAyah', label: 'Nama Ayah', type: 'text', placeholder: 'Nama lengkap ayah', required: true },
+   172→      { name: 'nikAyah', label: 'NIK Ayah', type: 'text', placeholder: '16 digit NIK ayah', required: true },
+   173→      { name: 'namaIbu', label: 'Nama Ibu', type: 'text', placeholder: 'Nama lengkap ibu', required: true },
+   174→      { name: 'nikIbu', label: 'NIK Ibu', type: 'text', placeholder: '16 digit NIK ibu', required: true },
+   175→      { name: 'alamatOrtu', label: 'Alamat Orang Tua', type: 'textarea', placeholder: 'Alamat lengkap orang tua', required: true },
+   176→      { name: 'anakKe', label: 'Anak Ke-', type: 'number', placeholder: 'Contoh: 2', required: true },
+   177→    ],
+   178→    exampleData: {
+   179→      namaBayi: 'Muhammad Rizki Pratama',
+   180→      jenisKelaminBayi: 'L',
+   181→      tanggalLahirBayi: '2024-06-15',
+   182→      tempatLahirBayi: 'RSUD Kepahiang',
+   183→      namaAyah: 'Budi Santoso',
+   184→      nikAyah: '1705060101900003',
+   185→      namaIbu: 'Dewi Sartika',
+   186→      nikIbu: '1705060203920004',
+   187→      alamatOrtu: 'Jl. Air Sempiang No. 8, RT 02/RW 01, Desa Air Sempiang',
+   188→      anakKe: '2',
+   189→    },
+   190→  },
+   191→  {
+   192→    serviceId: 'surat-kematian',
+   193→    title: 'Surat Kematian',
+   194→    description: 'Surat keterangan kematian yang diterbitkan oleh pemerintah desa sebagai dokumen resmi pencatatan kematian.',
+   195→    icon: <Heart className="h-6 w-6" />,
+   196→    iconBg: 'bg-red-100 text-red-700',
+   197→    fields: [
+   198→      { name: 'namaAlmarhum', label: 'Nama Almarhum/Almarhumah', type: 'text', placeholder: 'Nama lengkap', required: true },
+   199→      { name: 'nikAlmarhum', label: 'NIK Almarhum/Almarhumah', type: 'text', placeholder: '16 digit NIK', required: true },
+   200→      { name: 'tanggalLahir', label: 'Tanggal Lahir', type: 'date', required: true },
+   201→      { name: 'tanggalMeninggal', label: 'Tanggal Meninggal', type: 'date', required: true },
+   202→      { name: 'tempatMeninggal', label: 'Tempat Meninggal', type: 'text', placeholder: 'Contoh: RSUD Kepahiang', required: true },
+   203→      { name: 'sebabMeninggal', label: 'Sebab Meninggal', type: 'text', placeholder: 'Contoh: Sakit / Usia Tua / Kecelakaan', required: true },
+   204→      { name: 'namaPelapor', label: 'Nama Pelapor', type: 'text', placeholder: 'Nama lengkap pelapor', required: true },
+   205→      { name: 'nikPelapor', label: 'NIK Pelapor', type: 'text', placeholder: '16 digit NIK pelapor', required: true },
+   206→      { name: 'hubunganPelapor', label: 'Hubungan dengan Almarhum', type: 'text', placeholder: 'Contoh: Anak kandung', required: true },
+   207→      { name: 'alamatAlmarhum', label: 'Alamat Terakhir Almarhum', type: 'textarea', placeholder: 'Alamat lengkap', required: true },
+   208→    ],
+   209→    exampleData: {
+   210→      namaAlmarhum: 'Hasan Basri',
+   211→      nikAlmarhum: '1705060101500005',
+   212→      tanggalLahir: '1950-05-10',
+   213→      tanggalMeninggal: '2024-11-20',
+   214→      tempatMeninggal: 'Rumah Sakit Umum Kepahiang',
+   215→      sebabMeninggal: 'Sakit (komplikasi diabetes)',
+   216→      namaPelapor: 'Rina Hasan',
+   217→      nikPelapor: '1705060203800006',
+   218→      hubunganPelapor: 'Anak kandung',
+   219→      alamatAlmarhum: 'Jl. Kenanga No. 3, RT 04/RW 02, Desa Air Sempiang',
+   220→    },
+   221→  },
+   222→  {
+   223→    serviceId: 'surat-usaha',
+   224→    title: 'Surat Keterangan Usaha',
+   225→    description: 'Surat keterangan usaha yang diterbitkan oleh pemerintah desa untuk keperluan perizinan, pinjaman modal, atau administrasi usaha.',
+   226→    icon: <ShoppingBag className="h-6 w-6" />,
+   227→    iconBg: 'bg-orange-100 text-orange-700',
+   228→    fields: [
+   229→      { name: 'namaPemilik', label: 'Nama Pemilik Usaha', type: 'text', placeholder: 'Contoh: Nur Hidayah', required: true },
+   230→      { name: 'nik', label: 'NIK', type: 'text', placeholder: '16 digit NIK', required: true },
+   231→      { name: 'namaUsaha', label: 'Nama Usaha', type: 'text', placeholder: 'Contoh: UD. Maju Bersama', required: true },
+   232→      { name: 'jenisUsaha', label: 'Jenis Usaha', type: 'select', required: true, options: [
+   233→        { value: 'Dagang', label: 'Dagang' },
+   234→        { value: 'Jasa', label: 'Jasa' },
+   235→        { value: 'Produksi', label: 'Produksi' },
+   236→        { value: 'Kuliner', label: 'Kuliner' },
+   237→        { value: 'Kerajinan', label: 'Kerajinan' },
+   238→        { value: 'Lainnya', label: 'Lainnya' },
+   239→      ]},
+   240→      { name: 'alamatUsaha', label: 'Alamat Usaha', type: 'textarea', placeholder: 'Alamat lengkap lokasi usaha', required: true },
+   241→      { name: 'lamaUsaha', label: 'Lama Usaha Berdiri', type: 'text', placeholder: 'Contoh: 3 Tahun', required: true },
+   242→      { name: 'modalUsaha', label: 'Modal Usaha (Rp)', type: 'number', placeholder: 'Contoh: 5000000', required: true },
+   243→      { name: 'keperluan', label: 'Keperluan Surat', type: 'select', required: true, options: [
+   244→        { value: 'Pinjaman Modal', label: 'Pinjaman Modal' },
+   245→        { value: 'Perizinan Usaha', label: 'Perizinan Usaha' },
+   246→        { value: 'IUMK', label: 'IUMK' },
+   247→        { value: 'Lainnya', label: 'Lainnya' },
+   248→      ]},
+   249→    ],
+   250→    exampleData: {
+   251→      namaPemilik: 'Nur Hidayah',
+   252→      nik: '1705060203850007',
+   253→      namaUsaha: 'UD. Maju Bersama',
+   254→      jenisUsaha: 'Kuliner',
+   255→      alamatUsaha: 'Jl. Pasar Air Sempiang No. 12, RT 03/RW 01, Desa Air Sempiang',
+   256→      lamaUsaha: '3 Tahun',
+   257→      modalUsaha: '5000000',
+   258→      keperluan: 'Pinjaman Modal',
+   259→    },
+   260→  },
+   261→  {
+   262→    serviceId: 'surat-tidak-mampu',
+   263→    title: 'Surat Keterangan Tidak Mampu',
+   264→    description: 'Surat keterangan tidak mampu (SKTM) untuk keperluan bantuan sosial, keringanan biaya pendidikan, atau pengobatan.',
+   265→    icon: <ShieldCheck className="h-6 w-6" />,
+   266→    iconBg: 'bg-yellow-100 text-yellow-700',
+   267→    fields: [
+   268→      { name: 'namaLengkap', label: 'Nama Lengkap', type: 'text', placeholder: 'Contoh: Sri Wahyuni', required: true },
+   269→      { name: 'nik', label: 'NIK', type: 'text', placeholder: '16 digit NIK', required: true },
+   270→      { name: 'tempatLahir', label: 'Tempat Lahir', type: 'text', placeholder: 'Contoh: Kepahiang', required: true },
+   271→      { name: 'tanggalLahir', label: 'Tanggal Lahir', type: 'date', required: true },
+   272→      { name: 'statusPerkawinan', label: 'Status Perkawinan', type: 'select', required: true, options: [{ value: 'Belum Kawin', label: 'Belum Kawin' }, { value: 'Kawin', label: 'Kawin' }, { value: 'Cerai Hidup', label: 'Cerai Hidup' }, { value: 'Cerai Mati', label: 'Cerai Mati' }] },
+   273→      { name: 'jumlahTanggungan', label: 'Jumlah Tanggungan', type: 'number', placeholder: 'Contoh: 3', required: true },
+   274→      { name: 'pekerjaan', label: 'Pekerjaan', type: 'text', placeholder: 'Contoh: Buruh Harian Lepas', required: true },
+   275→      { name: 'penghasilanPerBulan', label: 'Penghasilan Per Bulan (Rp)', type: 'number', placeholder: 'Contoh: 800000', required: true },
+   276→      { name: 'alamat', label: 'Alamat', type: 'textarea', placeholder: 'Alamat lengkap', required: true },
+   277→      { name: 'keperluan', label: 'Keperluan SKTM', type: 'select', required: true, options: [
+   278→        { value: 'Bantuan Sosial', label: 'Bantuan Sosial' },
+   279→        { value: 'Keringanan Biaya Pendidikan', label: 'Keringanan Biaya Pendidikan' },
+   280→        { value: 'Keringanan Biaya Pengobatan', label: 'Keringanan Biaya Pengobatan' },
+   281→        { value: 'Keringanan Listrik/Air', label: 'Keringanan Listrik/Air' },
+   282→        { value: 'Lainnya', label: 'Lainnya' },
+   283→      ]},
+   284→    ],
+   285→    exampleData: {
+   286→      namaLengkap: 'Sri Wahyuni',
+   287→      nik: '1705060103880008',
+   288→      tempatLahir: 'Kepahiang',
+   289→      tanggalLahir: '1988-03-15',
+   290→      statusPerkawinan: 'Kawin',
+   291→      jumlahTanggungan: '3',
+   292→      pekerjaan: 'Buruh Harian Lepas',
+   293→      penghasilanPerBulan: '800000',
+   294→      alamat: 'Jl. Melati No. 7, RT 02/RW 03, Desa Air Sempiang, Kec. Kabawetan',
+   295→      keperluan: 'Keringanan Biaya Pendidikan',
+   296→    },
+   297→  },
+   298→  {
+   299→    serviceId: 'surat-sehat',
+   300→    title: 'Surat Keterangan Sehat',
+   301→    description: 'Surat keterangan sehat dari pemerintah desa untuk keperluan melamar pekerjaan, pendaftaran sekolah, atau keperluan lainnya.',
+   302→    icon: <Stethoscope className="h-6 w-6" />,
+   303→    iconBg: 'bg-green-100 text-green-700',
+   304→    fields: [
+   305→      { name: 'namaLengkap', label: 'Nama Lengkap', type: 'text', placeholder: 'Contoh: Rudi Hartono', required: true },
+   306→      { name: 'nik', label: 'NIK', type: 'text', placeholder: '16 digit NIK', required: true },
+   307→      { name: 'tempatLahir', label: 'Tempat Lahir', type: 'text', required: true },
+   308→      { name: 'tanggalLahir', label: 'Tanggal Lahir', type: 'date', required: true },
+   309→      { name: 'jenisKelamin', label: 'Jenis Kelamin', type: 'select', required: true, options: [{ value: 'L', label: 'Laki-laki' }, { value: 'P', label: 'Perempuan' }] },
+   310→      { name: 'alamat', label: 'Alamat', type: 'textarea', required: true },
+   311→      { name: 'keperluan', label: 'Keperluan Surat Sehat', type: 'select', required: true, options: [
+   312→        { value: 'Melamar Pekerjaan', label: 'Melamar Pekerjaan' },
+   313→        { value: 'Pendaftaran Sekolah', label: 'Pendaftaran Sekolah' },
+   314→        { value: 'Pendaftaran Perkawinan', label: 'Pendaftaran Perkawinan' },
+   315→        { value: 'Lainnya', label: 'Lainnya' },
+   316→      ]},
+   317→    ],
+   318→    exampleData: {
+   319→      namaLengkap: 'Rudi Hartono',
+   320→      nik: '1705060101950009',
+   321→      tempatLahir: 'Kepahiang',
+   322→      tanggalLahir: '1995-01-01',
+   323→      jenisKelamin: 'L',
+   324→      alamat: 'Jl. Anggrek No. 15, RT 01/RW 02, Desa Air Sempiang',
+   325→      keperluan: 'Melamar Pekerjaan',
+   326→    },
+   327→  },
+   328→  {
+   329→    serviceId: 'surat-skck',
+   330→    title: 'Surat Pengantar SKCK',
+   331→    description: 'Surat pengantar dari pemerintah desa untuk mengurus Surat Keterangan Catatan Kepolisian (SKCK) di Polsek/Polres.',
+   332→    icon: <Scale className="h-6 w-6" />,
+   333→    iconBg: 'bg-indigo-100 text-indigo-700',
+   334→    fields: [
+   335→      { name: 'namaLengkap', label: 'Nama Lengkap', type: 'text', placeholder: 'Contoh: Dedi Mulyadi', required: true },
+   336→      { name: 'nik', label: 'NIK', type: 'text', placeholder: '16 digit NIK', required: true },
+   337→      { name: 'tempatLahir', label: 'Tempat Lahir', type: 'text', required: true },
+   338→      { name: 'tanggalLahir', label: 'Tanggal Lahir', type: 'date', required: true },
+   339→      { name: 'jenisKelamin', label: 'Jenis Kelamin', type: 'select', required: true, options: [{ value: 'L', label: 'Laki-laki' }, { value: 'P', label: 'Perempuan' }] },
+   340→      { name: 'agama', label: 'Agama', type: 'select', required: true, options: [{ value: 'Islam', label: 'Islam' }, { value: 'Kristen', label: 'Kristen' }, { value: 'Katolik', label: 'Katolik' }, { value: 'Hindu', label: 'Hindu' }, { value: 'Buddha', label: 'Buddha' }, { value: 'Konghucu', label: 'Konghucu' }] },
+   341→      { name: 'pekerjaan', label: 'Pekerjaan', type: 'text', required: true },
+   342→      { name: 'alamat', label: 'Alamat', type: 'textarea', required: true },
+   343→      { name: 'keperluan', label: 'Keperluan Pengurusan SKCK', type: 'text', placeholder: 'Contoh: Untuk melamar pekerjaan', required: true },
+   344→    ],
+   345→    exampleData: {
+   346→      namaLengkap: 'Dedi Mulyadi',
+   347→      nik: '1705060101930010',
+   348→      tempatLahir: 'Bengkulu',
+   349→      tanggalLahir: '1993-07-20',
+   350→      jenisKelamin: 'L',
+   351→      agama: 'Islam',
+   352→      pekerjaan: 'Pedagang',
+   353→      alamat: 'Jl. Pasar Baru No. 5, RT 03/RW 01, Desa Air Sempiang',
+   354→      keperluan: 'Untuk melamar pekerjaan di PT. Indah Kiat Pulp and Paper',
+   355→    },
+   356→  },
+   357→  {
+   358→    serviceId: 'surat-pindah',
+   359→    title: 'Surat Pindah Domisili',
+   360→    description: 'Surat keterangan pindah domisili untuk warga yang akan berpindah tempat tinggal ke wilayah lain.',
+   361→    icon: <Truck className="h-6 w-6" />,
+   362→    iconBg: 'bg-teal-100 text-teal-700',
+   363→    fields: [
+   364→      { name: 'namaLengkap', label: 'Nama Lengkap', type: 'text', required: true },
+   365→      { name: 'nik', label: 'NIK', type: 'text', placeholder: '16 digit NIK', required: true },
+   366→      { name: 'alamatAsal', label: 'Alamat Asal', type: 'textarea', required: true },
+   367→      { name: 'alamatTujuan', label: 'Alamat Tujuan Pindah', type: 'textarea', required: true },
+   368→      { name: 'alasanPindah', label: 'Alasan Pindah', type: 'select', required: true, options: [
+   369→        { value: 'Pekerjaan', label: 'Pekerjaan' },
+   370→        { value: 'Pendidikan', label: 'Pendidikan' },
+   371→        { value: 'Keluarga', label: 'Keluarga' },
+   372→        { value: 'Keamanan', label: 'Keamanan' },
+   373→        { value: 'Lainnya', label: 'Lainnya' },
+   374→      ]},
+   375→      { name: 'jumlahAnggotaPindah', label: 'Jumlah Anggota Keluarga yang Pindah', type: 'number', required: true },
+   376→      { name: 'tanggalPindah', label: 'Rencana Tanggal Pindah', type: 'date', required: true },
+   377→    ],
+   378→    exampleData: {
+   379→      namaLengkap: 'Eko Prasetyo',
+   380→      nik: '1705060101900011',
+   381→      alamatAsal: 'Jl. Mawar No. 20, RT 01/RW 01, Desa Air Sempiang, Kec. Kabawetan',
+   382→      alamatTujuan: 'Jl. Sudirman No. 45, RT 05/RW 03, Kelurahan Pasar Kepahiang, Kec. Kepahiang',
+   383→      alasanPindah: 'Pekerjaan',
+   384→      jumlahAnggotaPindah: '4',
+   385→      tanggalPindah: '2025-01-15',
+   386→    },
+   387→  },
+   388→  {
+   389→    serviceId: 'surat-lainnya',
+   390→    title: 'Surat Keterangan Lainnya',
+   391→    description: 'Surat keterangan umum dari pemerintah desa untuk berbagai keperluan administrasi lainnya yang tidak termasuk dalam kategori di atas.',
+   392→    icon: <FileText className="h-6 w-6" />,
+   393→    iconBg: 'bg-gray-100 text-gray-700',
+   394→    fields: [
+   395→      { name: 'namaLengkap', label: 'Nama Lengkap', type: 'text', required: true },
+   396→      { name: 'nik', label: 'NIK', type: 'text', placeholder: '16 digit NIK', required: true },
+   397→      { name: 'alamat', label: 'Alamat', type: 'textarea', required: true },
+   398→      { name: 'jenisSurat', label: 'Jenis Surat yang Diminta', type: 'text', placeholder: 'Contoh: Surat Keterangan Penguasaan Tanah', required: true },
+   399→      { name: 'keperluan', label: 'Keperluan / Keterangan', type: 'textarea', placeholder: 'Jelaskan keperluan surat secara detail', required: true },
+   400→    ],
+   401→    exampleData: {
+   402→      namaLengkap: 'Bambang Suryanto',
+   403→      nik: '1705060101850012',
+   404→      alamat: 'Jl. Kenanga No. 8, RT 02/RW 01, Desa Air Sempiang',
+   405→      jenisSurat: 'Surat Keterangan Penguasaan Tanah',
+   406→      keperluan: 'Untuk mengurus sertifikat tanah warisan di Badan Pertanahan Nasional',
+   407→    },
+   408→  },
+   409→];
+   410→
+   411→function ServiceRegistrationForm({ config }: { config: ServiceFormConfig }) {
+   412→  const [formData, setFormData] = useState<Record<string, string>>({});
+   413→  const [submitting, setSubmitting] = useState(false);
+   414→  const [submitted, setSubmitted] = useState(false);
+   415→  const [showExample, setShowExample] = useState(false);
+   416→
+   417→  const handleFieldChange = (name: string, value: string) => {
+   418→    setFormData((prev) => ({ ...prev, [name]: value }));
+   419→  };
+   420→
+   421→  const fillExample = () => {
+   422→    setFormData({ ...config.exampleData });
+   423→    setShowExample(false);
+   424→  };
+   425→
+   426→  const handleSubmit = async (e: React.FormEvent) => {
+   427→    e.preventDefault();
+   428→    setSubmitting(true);
+   429→    // Simulate API call
+   430→    await new Promise((resolve) => setTimeout(resolve, 1500));
+   431→    setSubmitting(false);
+   432→    setSubmitted(true);
+   433→  };
+   434→
+   435→  if (submitted) {
+   436→    return (
+   437→      <Card className="border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
+   438→        <CardContent className="p-8 text-center">
+   439→          <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+   440→            <CheckCircle2 className="h-8 w-8" />
+   441→          </div>
+   442→          <h3 className="font-bold text-green-800 text-xl mb-2">Pengajuan Berhasil Dikirim!</h3>
+   443→          <p className="text-sm text-gray-600 mb-4 max-w-md mx-auto">
+   444→            Pengajuan surat <strong>{config.title}</strong> Anda telah berhasil dikirim. Tim pelayanan desa akan memproses permohonan Anda dalam 1-3 hari kerja.
+   445→          </p>
+   446→          <div className="bg-white rounded-lg p-4 max-w-sm mx-auto mb-4 border">
+   447→            <p className="text-xs text-gray-500 mb-1">Nomor Pengajuan</p>
+   448→            <p className="font-bold text-emerald-800 text-lg">SKD-{Date.now().toString().slice(-8)}</p>
+   449→          </div>
+   450→          <p className="text-xs text-gray-500 mb-4">
+   451→            Anda akan dihubungi melalui WhatsApp atau telepon untuk konfirmasi lebih lanjut.
+   452→          </p>
+   453→          <Button
+   454→            onClick={() => { setSubmitted(false); setFormData({}); }}
+   455→            className="bg-emerald-600 hover:bg-emerald-700"
+   456→          >
+   457→            Ajukan Surat Lainnya
+   458→          </Button>
+   459→        </CardContent>
+   460→      </Card>
+   461→    );
+   462→  }
+   463→
+   464→  return (
+   465→    <div>
+   466→      <div className="flex items-start gap-4 mb-6">
+   467→        <div className={`w-14 h-14 rounded-xl flex items-center justify-center shrink-0 ${config.iconBg}`}>
+   468→          {config.icon}
+   469→        </div>
+   470→        <div>
+   471→          <h3 className="font-bold text-emerald-900 text-xl">{config.title}</h3>
+   472→          <p className="text-sm text-gray-600 mt-1">{config.description}</p>
+   473→        </div>
+   474→      </div>
+   475→
+   476→      {/* Fill Example Button */}
+   477→      <div className="flex gap-2 mb-6">
+   478→        <Button
+   479→          variant="outline"
+   480→          size="sm"
+   481→          onClick={fillExample}
+   482→          className="text-xs border-dashed"
+   483→        >
+   484→          <ClipboardList className="h-3 w-3 mr-1" />
+   485→          Isi Contoh Data
+   486→        </Button>
+   487→        <Button
+   488→          variant="ghost"
+   489→          size="sm"
+   490→          onClick={() => setFormData({})}
+   491→          className="text-xs text-gray-500"
+   492→        >
+   493→          Kosongkan Form
+   494→        </Button>
+   495→      </div>
+   496→
+   497→      <form onSubmit={handleSubmit}>
+   498→        <div className="grid sm:grid-cols-2 gap-4">
+   499→          {config.fields.map((field) => (
+   500→            <div key={field.name} className={field.type === 'textarea' ? 'sm:col-span-2' : ''}>
+   501→              <Label htmlFor={field.name} className="text-sm font-medium text-gray-700 mb-1.5 block">
+   502→                {field.label} {field.required && <span className="text-red-500">*</span>}
+   503→              </Label>
+   504→              {field.type === 'select' ? (
+   505→                <Select
+   506→                  value={formData[field.name] || ''}
+   507→                  onValueChange={(value) => handleFieldChange(field.name, value)}
+   508→                >
+   509→                  <SelectTrigger className="w-full">
+   510→                    <SelectValue placeholder={`Pilih ${field.label.toLowerCase()}`} />
+   511→                  </SelectTrigger>
+   512→                  <SelectContent>
+   513→                    {field.options?.map((opt) => (
+   514→                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+   515→                    ))}
+   516→                  </SelectContent>
+   517→                </Select>
+   518→              ) : field.type === 'textarea' ? (
+   519→                <Textarea
+   520→                  id={field.name}
+   521→                  value={formData[field.name] || ''}
+   522→                  onChange={(e) => handleFieldChange(field.name, e.target.value)}
+   523→                  placeholder={field.placeholder}
+   524→                  required={field.required}
+   525→                  rows={3}
+   526→                  className="resize-none"
+   527→                />
+   528→              ) : (
+   529→                <Input
+   530→                  id={field.name}
+   531→                  type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'}
+   532→                  value={formData[field.name] || ''}
+   533→                  onChange={(e) => handleFieldChange(field.name, e.target.value)}
+   534→                  placeholder={field.placeholder}
+   535→                  required={field.required}
+   536→                />
+   537→              )}
+   538→            </div>
+   539→          ))}
+   540→        </div>
+   541→
+   542→        <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+   543→          <div className="flex items-start gap-2">
+   544→            <AlertCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+   545→            <div>
+   546→              <p className="text-xs font-medium text-amber-800">Penting:</p>
+   547→              <p className="text-xs text-amber-700">Pastikan semua data yang Anda masukkan sudah benar. Data akan diverifikasi oleh petugas desa. Siapkan juga dokumen asli saat pengambilan surat di kantor desa.</p>
+   548→            </div>
+   549→          </div>
+   550→        </div>
+   551→
+   552→        <div className="mt-6 flex gap-3">
+   553→          <Button
+   554→            type="submit"
+   555→            disabled={submitting}
+   556→            className="bg-emerald-600 hover:bg-emerald-700 flex-1 sm:flex-none"
+   557→          >
+   558→            {submitting ? (
+   559→              <>
+   560→                <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Mengirim...
+   561→              </>
+   562→            ) : (
+   563→              <>
+   564→                <Send className="h-4 w-4 mr-2" /> Kirim Pengajuan
+   565→              </>
+   566→            )}
+   567→          </Button>
+   568→          <Button
+   569→            type="button"
+   570→            variant="outline"
+   571→            onClick={() => setFormData({})}
+   572→          >
+   573→            Reset
+   574→          </Button>
+   575→        </div>
+   576→      </form>
+   577→    </div>
+   578→  );
+   579→}
+   580→
+   581→function LayananDesaTab() {
+   582→  const [services, setServices] = useState<Service[]>([]);
+   583→  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
+   584→  const [loading, setLoading] = useState(true);
+   585→  const [selectedServiceForm, setSelectedServiceForm] = useState<string | null>(null);
+   586→
+   587→  useEffect(() => {
+   588→    fetch('/api/services')
+   589→      .then((r) => r.json())
+   590→      .then((data) => { setServices(data); setLoading(false); })
+   591→      .catch(() => setLoading(false));
+   592→  }, []);
+   593→
+   594→  const categories = ['ALL', ...Array.from(new Set(services.map((s) => s.category)))];
+   595→  const filtered = selectedCategory === 'ALL' ? services : services.filter((s) => s.category === selectedCategory);
+   596→
+   597→  // If a registration form is selected
+   598→  if (selectedServiceForm) {
+   599→    const formConfig = serviceFormConfigs.find((c) => c.serviceId === selectedServiceForm);
+   600→    if (formConfig) {
+   601→      return (
+   602→        <div>
+   603→          <button
+   604→            onClick={() => setSelectedServiceForm(null)}
+   605→            className="flex items-center gap-2 text-emerald-600 hover:text-emerald-800 mb-6 text-sm font-medium"
+   606→          >
+   607→            <ArrowLeft className="h-4 w-4" /> Kembali ke Daftar Layanan
+   608→          </button>
+   609→          <Card className="border-emerald-100 shadow-lg">
+   610→            <CardContent className="p-6 sm:p-8">
+   611→              <ServiceRegistrationForm config={formConfig} />
+   612→            </CardContent>
+   613→          </Card>
+   614→        </div>
+   615→      );
+   616→    }
+   617→  }
+   618→
+   619→  return (
+   620→    <div>
+   621→      {/* Quick Registration Cards */}
+   622→      <div className="mb-10">
+   623→        <h2 className="text-xl font-bold text-emerald-900 mb-4 flex items-center gap-2">
+   624→          <Landmark className="h-5 w-5" />
+   625→          Pendaftaran Surat Online
+   626→        </h2>
+   627→        <p className="text-sm text-gray-600 mb-6">Pilih jenis surat yang ingin Anda ajukan dan isi formulir pendaftaran secara online.</p>
+   628→        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+   629→          {serviceFormConfigs.map((config) => (
+   630→            <button
+   631→              key={config.serviceId}
+   632→              onClick={() => setSelectedServiceForm(config.serviceId)}
+   633→              className="p-4 rounded-xl border-2 border-dashed border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/50 transition-all text-center group"
+   634→            >
+   635→              <div className={`w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2 ${config.iconBg} group-hover:scale-110 transition-transform`}>
+   636→                {config.icon}
+   637→              </div>
+   638→              <p className="text-xs font-semibold text-gray-700 group-hover:text-emerald-800 leading-tight">{config.title}</p>
+   639→            </button>
+   640→          ))}
+   641→        </div>
+   642→      </div>
+   643→
+   644→      {/* Divider */}
+   645→      <div className="border-t border-gray-100 my-8" />
+   646→
+   647→      {/* Service List */}
+   648→      <h2 className="text-xl font-bold text-emerald-900 mb-4 flex items-center gap-2">
+   649→        <ClipboardList className="h-5 w-5" />
+   650→        Daftar Layanan Desa
+   651→      </h2>
+   652→
+   653→      {/* Category Filter */}
+   654→      <div className="flex flex-wrap gap-2 justify-center mb-8">
+   655→        {categories.map((cat) => (
+   656→          <button
+   657→            key={cat}
+   658→            onClick={() => setSelectedCategory(cat)}
+   659→            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+   660→              selectedCategory === cat
+   661→                ? 'bg-emerald-600 text-white shadow-md'
+   662→                : 'bg-gray-100 text-gray-700 hover:bg-emerald-50 hover:text-emerald-700'
+   663→            }`}
+   664→          >
+   665→            {cat === 'ALL' ? 'Semua' : cat}
+   666→          </button>
+   667→        ))}
+   668→      </div>
+   669→
+   670→      {loading ? (
+   671→        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+   672→          {[1, 2, 3, 4, 5, 6].map((i) => (
+   673→            <Card key={i} className="animate-pulse">
+   674→              <CardContent className="p-6">
+   675→                <div className="h-6 bg-gray-200 rounded mb-3" />
+   676→                <div className="h-4 bg-gray-100 rounded mb-2" />
+   677→                <div className="h-4 bg-gray-100 rounded w-2/3" />
+   678→              </CardContent>
+   679→            </Card>
+   680→          ))}
+   681→        </div>
+   682→      ) : (
+   683→        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+   684→          {filtered.map((service) => (
+   685→            <Card key={service.id} className="hover:shadow-lg transition-shadow border-emerald-100 group">
+   686→              <CardContent className="p-6">
+   687→                <div className="flex items-start gap-3 mb-4">
+   688→                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${categoryColors[service.category] || 'bg-gray-100 text-gray-800'}`}>
+   689→                    {categoryIcons[service.category] || <FileText className="h-5 w-5" />}
+   690→                  </div>
+   691→                  <Badge className={categoryColors[service.category] || 'bg-gray-100 text-gray-800'}>
+   692→                    {service.category}
+   693→                  </Badge>
+   694→                </div>
+   695→                <h3 className="font-bold text-emerald-900 mb-2">{service.name}</h3>
+   696→                <p className="text-sm text-gray-600 mb-4 leading-relaxed">{service.description}</p>
+   697→                {service.requirements && (
+   698→                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+   699→                    <p className="text-xs font-medium text-amber-800 mb-1">Persyaratan:</p>
+   700→                    <p className="text-xs text-amber-700">{service.requirements}</p>
+   701→                  </div>
+   702→                )}
+   703→              </CardContent>
+   704→            </Card>
+   705→          ))}
+   706→        </div>
+   707→      )}
+   708→
+   709→      {/* Info Box */}
+   710→      <Card className="mt-12 border-emerald-200 bg-emerald-50">
+   711→        <CardContent className="p-6 text-center">
+   712→          <h3 className="font-bold text-emerald-800 mb-2">Butuh Bantuan?</h3>
+   713→          <p className="text-sm text-gray-600 mb-4">
+   714→            Hubungi kami melalui WhatsApp untuk bantuan pengurusan layanan desa
+   715→          </p>
+   716→          <a
+   717→            href="https://wa.me/6285150859735"
+   718→            target="_blank"
+   719→            rel="noopener noreferrer"
+   720→            className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors"
+   721→          >
+   722→            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+   723→              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+   724→            </svg>
+   725→            Hubungi via WhatsApp
+   726→          </a>
+   727→        </CardContent>
+   728→      </Card>
+   729→    </div>
+   730→  );
+   731→}
+   732→
+   733→function KonsolTab() {
+   734→  return (
+   735→    <div>
+   736→      {/* Contact Methods */}
+   737→      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+   738→        <Card className="hover:shadow-lg transition-shadow border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
+   739→          <CardContent className="p-6 text-center">
+   740→            <div className="w-16 h-16 bg-green-100 text-green-700 rounded-full flex items-center justify-center mx-auto mb-4">
+   741→              <svg className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
+   742→                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+   743→              </svg>
+   744→            </div>
+   745→            <h3 className="font-bold text-green-800 mb-2 text-lg">WhatsApp</h3>
+   746→            <p className="text-sm text-gray-600 mb-4">Respon cepat melalui WhatsApp untuk konsultasi dan bantuan</p>
+   747→            <a href="https://wa.me/6285150859735" target="_blank" rel="noopener noreferrer">
+   748→              <Button className="bg-green-600 hover:bg-green-500">
+   749→                <MessageCircle className="mr-2 h-4 w-4" /> Chat WhatsApp
+   750→              </Button>
+   751→            </a>
+   752→            <p className="text-xs text-gray-400 mt-2">085150859735</p>
+   753→          </CardContent>
+   754→        </Card>
+   755→
+   756→        <Card className="hover:shadow-lg transition-shadow border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50">
+   757→          <CardContent className="p-6 text-center">
+   758→            <div className="w-16 h-16 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center mx-auto mb-4">
+   759→              <Phone className="h-8 w-8" />
+   760→            </div>
+   761→            <h3 className="font-bold text-blue-800 mb-2 text-lg">Telepon</h3>
+   762→            <p className="text-sm text-gray-600 mb-4">Hubungi kantor desa langsung melalui telepon pada jam kerja</p>
+   763→            <a href="tel:085150859735">
+   764→              <Button className="bg-blue-600 hover:bg-blue-500">
+   765→                <Phone className="mr-2 h-4 w-4" /> Hubungi
+   766→              </Button>
+   767→            </a>
+   768→            <p className="text-xs text-gray-400 mt-2">085150859735</p>
+   769→          </CardContent>
+   770→        </Card>
+   771→
+   772→        <Card className="hover:shadow-lg transition-shadow border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
+   773→          <CardContent className="p-6 text-center">
+   774→            <div className="w-16 h-16 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center mx-auto mb-4">
+   775→              <Mail className="h-8 w-8" />
+   776→            </div>
+   777→            <h3 className="font-bold text-purple-800 mb-2 text-lg">Email</h3>
+   778→            <p className="text-sm text-gray-600 mb-4">Kirim email untuk pertanyaan atau pengaduan yang memerlukan dokumentasi</p>
+   779→            <a href="mailto:info@desaairsempiang.id">
+   780→              <Button className="bg-purple-600 hover:bg-purple-500">
+   781→                <Mail className="mr-2 h-4 w-4" /> Kirim Email
+   782→              </Button>
+   783→            </a>
+   784→            <p className="text-xs text-gray-400 mt-2">info@desaairsempiang.id</p>
+   785→          </CardContent>
+   786→        </Card>
+   787→      </div>
+   788→
+   789→      {/* FAQ */}
+   790→      <div className="max-w-3xl mx-auto">
+   791→        <h2 className="text-2xl font-bold text-emerald-900 text-center mb-8">Pertanyaan Umum (FAQ)</h2>
+   792→        <div className="space-y-4">
+   793→          {[
+   794→            {
+   795→              q: 'Bagaimana cara mengurus KTP di Desa Air Sempiang?',
+   796→              a: 'Bawa fotokopi KK, surat pengantar RT/RW, dan pas foto 3x4 (2 lembar) ke kantor desa pada hari kerja Senin-Jumat pukul 08:00-16:00 WIB. Proses pembuatan memakan waktu 7-14 hari kerja.',
+   797→            },
+   798→            {
+   799→              q: 'Bagaimana cara mengajukan surat secara online?',
+   800→              a: 'Pilih jenis surat yang Anda butuhkan pada bagian "Pendaftaran Surat Online" di atas, isi formulir dengan data yang lengkap dan benar, lalu kirim. Tim pelayanan desa akan memproses pengajuan Anda dalam 1-3 hari kerja.',
+   801→            },
+   802→            {
+   803→              q: 'Apakah ada biaya untuk mengakses layanan desa online?',
+   804→              a: 'Tidak, semua layanan desa digital dapat diakses secara gratis oleh warga Desa Air Sempiang. Biaya hanya berlaku untuk pembelian produk di marketplace.',
+   805→            },
+   806→            {
+   807→              q: 'Berapa lama proses pengajuan surat online?',
+   808→              a: 'Pengajuan surat online biasanya diproses dalam 1-3 hari kerja. Anda akan dihubungi melalui WhatsApp atau telepon untuk konfirmasi dan pengambilan surat di kantor desa.',
+   809→            },
+   810→            {
+   811→              q: 'Bagaimana cara melaporkan masalah infrastruktur desa?',
+   812→              a: 'Anda dapat menggunakan fitur Pelaporan Online di Layanan Desa atau menghubungi kami melalui WhatsApp di 085150859735. Tim desa akan menindaklanjuti laporan Anda.',
+   813→            },
+   814→          ].map((faq, i) => (
+   815→            <Card key={i} className="border-emerald-100">
+   816→              <CardContent className="p-6">
+   817→                <div className="flex items-start gap-3">
+   818→                  <HelpCircle className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+   819→                  <div>
+   820→                    <h3 className="font-bold text-emerald-900 mb-2">{faq.q}</h3>
+   821→                    <p className="text-sm text-gray-600 leading-relaxed">{faq.a}</p>
+   822→                  </div>
+   823→                </div>
+   824→              </CardContent>
+   825→            </Card>
+   826→          ))}
+   827→        </div>
+   828→      </div>
+   829→
+   830→      {/* Service Hours */}
+   831→      <Card className="mt-12 border-emerald-200 bg-emerald-50">
+   832→        <CardContent className="p-6 text-center">
+   833→          <Clock className="h-8 w-8 text-emerald-600 mx-auto mb-3" />
+   834→          <h3 className="font-bold text-emerald-800 mb-2">Jam Pelayanan</h3>
+   835→          <div className="flex flex-wrap justify-center gap-6 text-sm">
+   836→            <div>
+   837→              <p className="font-medium text-emerald-700">Senin - Jumat</p>
+   838→              <p className="text-gray-600">08:00 - 16:00 WIB</p>
+   839→            </div>
+   840→            <div>
+   841→              <p className="font-medium text-emerald-700">Sabtu</p>
+   842→              <p className="text-gray-600">08:00 - 12:00 WIB</p>
+   843→            </div>
+   844→            <div>
+   845→              <p className="font-medium text-emerald-700">Minggu & Hari Libur</p>
+   846→              <p className="text-gray-600">Tutup (darurat: WhatsApp)</p>
+   847→            </div>
+   848→          </div>
+   849→        </CardContent>
+   850→      </Card>
+   851→    </div>
+   852→  );
+   853→}
+   854→
+   855→export default function LayananPage() {
+   856→  return (
+   857→    <div className="py-12">
+   858→      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   859→        <div className="text-center mb-10">
+   860→          <Badge className="bg-purple-100 text-purple-800 mb-3">
+   861→            <Landmark className="h-3 w-3 mr-1" /> Layanan
+   862→          </Badge>
+   863→          <h1 className="text-3xl font-bold text-emerald-900 mb-3">Layanan & Bantuan Desa</h1>
+   864→          <p className="text-gray-600 max-w-2xl mx-auto">
+   865→            Akses layanan administrasi desa, pendaftaran surat online, konsultasi, dan pusat bantuan dalam satu tempat.
+   866→          </p>
+   867→        </div>
+   868→
+   869→        <Tabs defaultValue="layanan" className="w-full">
+   870→          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+   871→            <TabsTrigger value="layanan" className="text-sm">
+   872→              <FileText className="h-4 w-4 mr-2" />
+   873→              Layanan Desa
+   874→            </TabsTrigger>
+   875→            <TabsTrigger value="konsol" className="text-sm">
+   876→              <HeadphonesIcon className="h-4 w-4 mr-2" />
+   877→              Pusat Bantuan
+   878→            </TabsTrigger>
+   879→          </TabsList>
+   880→          <TabsContent value="layanan">
+   881→            <LayananDesaTab />
+   882→          </TabsContent>
+   883→          <TabsContent value="konsol">
+   884→            <KonsolTab />
+   885→          </TabsContent>
+   886→        </Tabs>
+   887→      </div>
+   888→    </div>
+   889→  );
+   890→}
+   891→

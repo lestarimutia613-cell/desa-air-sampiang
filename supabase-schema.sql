@@ -184,6 +184,22 @@ CREATE TABLE IF NOT EXISTS resident_data (
 );
 
 -- ============================================
+-- SERVICE APPLICATIONS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS service_applications (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  service_type VARCHAR(255) NOT NULL,
+  applicant_name VARCHAR(255) NOT NULL,
+  applicant_nik VARCHAR(16),
+  form_data JSONB NOT NULL DEFAULT '{}',
+  status VARCHAR(50) DEFAULT 'PENDING',
+  user_id UUID REFERENCES users(id),
+  admin_notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
 -- SETTINGS TABLE (Key-Value)
 -- ============================================
 CREATE TABLE IF NOT EXISTS settings (
@@ -248,7 +264,7 @@ $$;
 -- ============================================
 -- Password: admin123 (SHA-256 hashed)
 INSERT INTO admins (username, name, password, role) VALUES
-  ('admin', 'Administrator Desa', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ADMIN')
+  ('admindesa', 'Admin Desa', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ADMIN')
 ON CONFLICT (username) DO NOTHING;
 
 -- ============================================

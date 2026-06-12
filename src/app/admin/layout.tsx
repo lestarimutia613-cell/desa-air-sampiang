@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   Package,
+  ClipboardList,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -30,6 +31,7 @@ const sidebarItems = [
   { label: 'Pesanan', href: '/admin/orders', icon: <Package className="h-5 w-5" /> },
   { label: 'Produk', href: '/admin/products', icon: <ShoppingBag className="h-5 w-5" /> },
   { label: 'Layanan', href: '/admin/services', icon: <FileText className="h-5 w-5" /> },
+  { label: 'Pengajuan Surat', href: '/admin/service-applications', icon: <ClipboardList className="h-5 w-5" /> },
   { label: 'Berita', href: '/admin/news', icon: <Newspaper className="h-5 w-5" /> },
   { label: 'Kursus', href: '/admin/courses', icon: <GraduationCap className="h-5 w-5" /> },
   { label: 'Literasi', href: '/admin/literacy', icon: <BookOpen className="h-5 w-5" /> },
