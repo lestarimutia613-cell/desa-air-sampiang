@@ -45,10 +45,13 @@ export default function Footer() {
             <nav className="space-y-2 text-sm text-emerald-300">
               {[
                 { label: 'Beranda', page: 'beranda' as Page },
-                { label: 'Layanan', page: 'layanan' as Page },
+                { label: 'Layanan Desa', page: 'layanan' as Page },
                 { label: 'Marketplace', page: 'marketplace' as Page },
-                { label: 'Komunitas', page: 'komunitas' as Page },
-                { label: 'Berita Terbaru', page: 'berita' as Page },
+                { label: 'Kependudukan', page: 'kependudukan' as Page },
+                { label: 'Corporate University', page: 'corporate-university' as Page },
+                { label: 'Literasi Digital', page: 'literasi' as Page },
+                { label: 'Console', page: 'konsol' as Page },
+                { label: 'Berita', page: 'berita' as Page },
               ].map((item) => (
                 <button
                   key={item.page}

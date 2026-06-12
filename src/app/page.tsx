@@ -9,7 +9,10 @@ import FloatingWhatsApp from '@/components/layout/FloatingWhatsApp';
 import BerandaPage from '@/components/pages/BerandaPage';
 import LayananPage from '@/components/pages/LayananPage';
 import MarketplacePage from '@/components/pages/MarketplacePage';
-import KomunitasPage from '@/components/pages/KomunitasPage';
+import KependudukanPage from '@/components/pages/KependudukanPage';
+import CorporateUniversityPage from '@/components/pages/CorporateUniversityPage';
+import LiterasiPage from '@/components/pages/LiterasiPage';
+import KonsolPage from '@/components/pages/KonsolPage';
 import BeritaPage from '@/components/pages/BeritaPage';
 import LoginPage from '@/components/pages/LoginPage';
 import PaymentPage from '@/components/pages/PaymentPage';
@@ -21,7 +24,10 @@ const pageMap: Record<string, React.ComponentType> = {
   'beranda': BerandaPage,
   'layanan': LayananPage,
   'marketplace': MarketplacePage,
-  'komunitas': KomunitasPage,
+  'kependudukan': KependudukanPage,
+  'corporate-university': CorporateUniversityPage,
+  'literasi': LiterasiPage,
+  'konsol': KonsolPage,
   'berita': BeritaPage,
   'login': LoginPage,
   'register': LoginPage,
