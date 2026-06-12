@@ -5,7 +5,7 @@ import { useAppStore } from '@/lib/store';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import AiChatBot from '@/components/chat/AiChatBot';
-import FloatingWhatsApp from '@/components/layout/FloatingWhatsApp';
+import FloatingActionBar from '@/components/layout/FloatingActionBar';
 import BerandaPage from '@/components/pages/BerandaPage';
 import LayananPage from '@/components/pages/LayananPage';
 import MarketplacePage from '@/components/pages/MarketplacePage';
@@ -17,8 +17,6 @@ import BeritaPage from '@/components/pages/BeritaPage';
 import LoginPage from '@/components/pages/LoginPage';
 import PaymentPage from '@/components/pages/PaymentPage';
 import OrderHistoryPage from '@/components/pages/OrderHistoryPage';
-import { MessageCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 const pageMap: Record<string, React.ComponentType> = {
   'beranda': BerandaPage,
@@ -36,7 +34,7 @@ const pageMap: Record<string, React.ComponentType> = {
 };
 
 export default function Home() {
-  const { currentPage, chatOpen, setChatOpen, setUser } = useAppStore();
+  const { currentPage, setUser } = useAppStore();
 
   // Restore user from localStorage
   useEffect(() => {
@@ -63,23 +61,12 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
-      <main className="flex-1">
+      <main className="flex-1 pb-16">
         <PageComponent />
       </main>
       <Footer />
       <AiChatBot />
-      <FloatingWhatsApp />
-      
-      {/* Floating Chat Button */}
-      {!chatOpen && (
-        <Button
-          onClick={() => setChatOpen(true)}
-          className="fixed bottom-4 right-4 z-40 w-14 h-14 rounded-full bg-emerald-600 hover:bg-emerald-700 shadow-lg"
-          size="icon"
-        >
-          <MessageCircle className="h-6 w-6" />
-        </Button>
-      )}
+      <FloatingActionBar />
     </div>
   );
 }

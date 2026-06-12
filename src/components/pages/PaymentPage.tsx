@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   ArrowLeft,
   Package,
+  AlertCircle,
 } from 'lucide-react';
 
 export default function PaymentPage() {
@@ -208,7 +209,7 @@ Kec. Kabawetan, Kab. Kepahiang, Bengkulu`;
                 {/* Greeting */}
                 <div>
                   <p className="text-sm text-gray-700">Dear <span className="font-bold">{buyerName}</span>,</p>
-                  <p className="text-sm text-gray-600 mt-1">Terima kasih sudah berbelanja di <span className="font-bold text-emerald-700">Marketplace Desa Air Sempiang</span> 🎉</p>
+                  <p className="text-sm text-gray-600 mt-1">Terima kasih sudah berbelanja di <span className="font-bold text-emerald-700">Marketplace Desa Air Sempiang</span></p>
                 </div>
 
                 <div className="border-t border-dashed border-gray-200" />
@@ -269,7 +270,7 @@ Kec. Kabawetan, Kab. Kepahiang, Bengkulu`;
 
                 {/* Instruction */}
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                  <p className="text-xs font-medium text-amber-800 mb-1">📌 Instruksi:</p>
+                  <p className="text-xs font-medium text-amber-800 mb-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" /> Instruksi:</p>
                   <p className="text-xs text-amber-700">Mohon lakukan pembayaran sesuai metode di atas, lalu kirim bukti pembayaran ke WhatsApp desa di nomor <span className="font-bold">085150859735</span>.</p>
                 </div>
 

@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { ShoppingCart, Plus, Minus, Trash2, ShoppingBag, Leaf, Package } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, ShoppingBag, Package, Store, Search } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -24,22 +24,24 @@ export default function MarketplacePage() {
   const { user, cart, addToCart, removeFromCart, updateCartQuantity, clearCart, setCurrentPage, setPendingOrder, cartTotal } = useAppStore();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [showCart, setShowCart] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetch('/api/products')
       .then((r) => r.json())
-      .then((data) => { setProducts(data); setLoading(false); })
+      .then((data) => {
+        // Only show UMKM products
+        const umkmProducts = data.filter((p: Product) => p.category === 'UMKM');
+        setProducts(umkmProducts);
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
   }, []);
 
-  const categories = ['ALL', ...Array.from(new Set(products.map((p) => p.category)))];
   const filtered = products.filter((p) => {
-    const matchCat = selectedCategory === 'ALL' || p.category === selectedCategory;
     const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchCat && matchSearch;
+    return matchSearch;
   });
 
   const handleAddToCart = (product: Product) => {
@@ -68,35 +70,41 @@ export default function MarketplacePage() {
     <div className="py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
-          <Badge className="bg-emerald-100 text-emerald-800 mb-3">Marketplace</Badge>
-          <h1 className="text-3xl font-bold text-emerald-900 mb-3">Marketplace Desa Air Sempiang</h1>
+          <Badge className="bg-orange-100 text-orange-800 mb-3">Marketplace UMKM</Badge>
+          <h1 className="text-3xl font-bold text-emerald-900 mb-3">Produk UMKM Desa Air Sempiang</h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Temukan produk unggulan UMKM dan pertanian lokal desa. Belanja langsung dari petani dan pengrajin Desa Air Sempiang.
+            Temukan produk unggulan Usaha Mikro Kecil Menengah lokal desa. Belanja langsung dari pengrajin dan pelaku UMKM Desa Air Sempiang.
           </p>
         </div>
 
-        {/* Search and Filter */}
+        {/* UMKM Stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {[
+            { label: 'Pelaku UMKM', value: '25+', icon: <Store className="h-5 w-5" />, color: 'bg-orange-50 text-orange-600 border-orange-200' },
+            { label: 'Produk Tersedia', value: products.length.toString(), icon: <Package className="h-5 w-5" />, color: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
+            { label: 'Kategori', value: 'UMKM', icon: <ShoppingBag className="h-5 w-5" />, color: 'bg-blue-50 text-blue-600 border-blue-200' },
+            { label: 'Pesan Sekarang', value: 'Gratis Ongkir', icon: <ShoppingCart className="h-5 w-5" />, color: 'bg-green-50 text-green-600 border-green-200' },
+          ].map((stat, i) => (
+            <Card key={i} className={`border ${stat.color}`}>
+              <CardContent className="p-4 text-center">
+                <div className="flex items-center justify-center mb-2">{stat.icon}</div>
+                <p className="text-lg font-bold">{stat.value}</p>
+                <p className="text-xs opacity-70">{stat.label}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Search and Cart */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
-          <Input
-            placeholder="Cari produk..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="max-w-sm"
-          />
-          <div className="flex flex-wrap gap-2">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  selectedCategory === cat
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-emerald-50'
-                }`}
-              >
-                {cat === 'ALL' ? 'Semua' : cat}
-              </button>
-            ))}
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Cari produk UMKM..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
           </div>
           {user && cart.length > 0 && (
             <Button
@@ -191,7 +199,7 @@ export default function MarketplacePage() {
         {/* Products Grid */}
         {loading ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            {[1, 2, 3, 4, 5, 6].map((i) => (
               <Card key={i} className="animate-pulse">
                 <div className="h-40 bg-gray-200 rounded-t-lg" />
                 <CardContent className="p-4">
@@ -202,16 +210,24 @@ export default function MarketplacePage() {
               </Card>
             ))}
           </div>
+        ) : filtered.length === 0 ? (
+          <Card className="border-gray-200">
+            <CardContent className="p-12 text-center">
+              <ShoppingBag className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <h3 className="font-bold text-gray-600 mb-2">Produk Tidak Ditemukan</h3>
+              <p className="text-sm text-gray-500">Coba gunakan kata kunci pencarian lain</p>
+            </CardContent>
+          </Card>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filtered.map((product) => {
               const inCart = cart.find((c) => c.productId === product.id);
               return (
-                <Card key={product.id} className="group hover:shadow-lg transition-all overflow-hidden border-emerald-100">
-                  <div className="h-40 bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center relative">
-                    <Package className="h-16 w-16 text-emerald-400" />
-                    <Badge className="absolute top-3 left-3 bg-white/90 text-emerald-800 text-[10px]">
-                      {product.category}
+                <Card key={product.id} className="group hover:shadow-lg transition-all overflow-hidden border-orange-100">
+                  <div className="h-40 bg-gradient-to-br from-orange-50 to-amber-50 flex items-center justify-center relative">
+                    <Store className="h-16 w-16 text-orange-300" />
+                    <Badge className="absolute top-3 left-3 bg-white/90 text-orange-800 text-[10px]">
+                      UMKM
                     </Badge>
                     {product.stock < 10 && (
                       <Badge className="absolute top-3 right-3 bg-red-100 text-red-700 text-[10px]">
@@ -269,7 +285,7 @@ export default function MarketplacePage() {
             <CardContent className="p-6 text-center">
               <ShoppingBag className="h-8 w-8 text-amber-600 mx-auto mb-3" />
               <h3 className="font-bold text-amber-800 mb-2">Masuk untuk Berbelanja</h3>
-              <p className="text-sm text-amber-700 mb-4">Anda perlu masuk atau mendaftar terlebih dahulu untuk berbelanja di marketplace desa</p>
+              <p className="text-sm text-amber-700 mb-4">Anda perlu masuk atau mendaftar terlebih dahulu untuk berbelanja di marketplace UMKM desa</p>
               <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => setCurrentPage('login')}>
                 Masuk / Daftar
               </Button>

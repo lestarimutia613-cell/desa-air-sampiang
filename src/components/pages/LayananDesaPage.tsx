@@ -1,9 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FileText, ClipboardList, Building, Tractor, GraduationCap, MoreHorizontal } from 'lucide-react';
+import {
+  FileText,
+  ClipboardList,
+  Building,
+  Tractor,
+  GraduationCap,
+  MoreHorizontal,
+  Landmark,
+} from 'lucide-react';
 
 interface Service {
   id: string;
@@ -50,7 +58,9 @@ export default function LayananDesaPage() {
     <div className="py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
-          <Badge className="bg-emerald-100 text-emerald-800 mb-3">Layanan Desa</Badge>
+          <Badge className="bg-purple-100 text-purple-800 mb-3">
+            <Landmark className="h-3 w-3 mr-1" /> Layanan Desa
+          </Badge>
           <h1 className="text-3xl font-bold text-emerald-900 mb-3">Layanan Desa Air Sempiang</h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Akses berbagai layanan administrasi dan pelayanan publik desa secara digital. 

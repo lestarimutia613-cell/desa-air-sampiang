@@ -25,18 +25,16 @@ import {
   History,
   Building2,
   Phone,
-  Bot,
-  MessageCircle,
-  Tractor,
-  ShoppingCartIcon,
-  Palette,
+  ClipboardList,
+  Send,
+  Search,
+  ScrollText,
   Baby,
   Heart,
   UserCheck,
   Monitor,
   Video,
   Award,
-  FileSearch,
   BookOpenCheck,
   Laptop,
   Coins,
@@ -45,9 +43,15 @@ import {
   Megaphone,
   Calendar,
   Camera,
-  ClipboardList,
-  Send,
-  Search,
+  Sprout,
+  Palette,
+  ShoppingCartIcon,
+  Landmark,
+  Stethoscope,
+  Scale,
+  Truck,
+  Wrench,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface SubItem {
@@ -61,7 +65,7 @@ interface NavItem {
   label: string;
   page: Page;
   icon: React.ReactNode;
-  emoji: string;
+  iconBg: string;
   subItems?: SubItem[];
 }
 
@@ -70,7 +74,7 @@ const navItems: NavItem[] = [
     label: 'Beranda',
     page: 'beranda',
     icon: <Home className="h-4 w-4" />,
-    emoji: '🏠',
+    iconBg: 'bg-emerald-100 text-emerald-700',
     subItems: [
       { label: 'Profil Desa', page: 'beranda', icon: <Building2 className="h-3.5 w-3.5" />, section: 'profil' },
       { label: 'Visi & Misi', page: 'beranda', icon: <Target className="h-3.5 w-3.5" />, section: 'visi-misi' },
@@ -83,14 +87,19 @@ const navItems: NavItem[] = [
   {
     label: 'Layanan Desa',
     page: 'layanan',
-    icon: <FileText className="h-4 w-4" />,
-    emoji: '🏛️',
+    icon: <Landmark className="h-4 w-4" />,
+    iconBg: 'bg-purple-100 text-purple-700',
     subItems: [
-      { label: 'Surat Keterangan Domisili', page: 'layanan', icon: <FileText className="h-3.5 w-3.5" /> },
+      { label: 'Surat Keterangan Domisili', page: 'layanan', icon: <ScrollText className="h-3.5 w-3.5" /> },
       { label: 'Surat Pengantar', page: 'layanan', icon: <Send className="h-3.5 w-3.5" /> },
       { label: 'Surat Kelahiran', page: 'layanan', icon: <Baby className="h-3.5 w-3.5" /> },
       { label: 'Surat Kematian', page: 'layanan', icon: <Heart className="h-3.5 w-3.5" /> },
-      { label: 'Surat Usaha', page: 'layanan', icon: <ShoppingBag className="h-3.5 w-3.5" /> },
+      { label: 'Surat Keterangan Usaha', page: 'layanan', icon: <ShoppingBag className="h-3.5 w-3.5" /> },
+      { label: 'Surat Keterangan Tidak Mampu', page: 'layanan', icon: <ShieldCheck className="h-3.5 w-3.5" /> },
+      { label: 'Surat Keterangan Sehat', page: 'layanan', icon: <Stethoscope className="h-3.5 w-3.5" /> },
+      { label: 'Surat Pengantar SKCK', page: 'layanan', icon: <Scale className="h-3.5 w-3.5" /> },
+      { label: 'Surat Pindah Domisili', page: 'layanan', icon: <Truck className="h-3.5 w-3.5" /> },
+      { label: 'Surat Keterangan Lainnya', page: 'layanan', icon: <FileText className="h-3.5 w-3.5" /> },
       { label: 'Pengajuan Online', page: 'layanan', icon: <ClipboardList className="h-3.5 w-3.5" /> },
       { label: 'Tracking Pengajuan', page: 'layanan', icon: <Search className="h-3.5 w-3.5" /> },
     ],
@@ -99,20 +108,16 @@ const navItems: NavItem[] = [
     label: 'Marketplace',
     page: 'marketplace',
     icon: <ShoppingBag className="h-4 w-4" />,
-    emoji: '🛒',
+    iconBg: 'bg-orange-100 text-orange-700',
     subItems: [
       { label: 'Produk UMKM', page: 'marketplace', icon: <ShoppingCartIcon className="h-3.5 w-3.5" /> },
-      { label: 'Produk Pertanian', page: 'marketplace', icon: <Tractor className="h-3.5 w-3.5" /> },
-      { label: 'Kerajinan Desa', page: 'marketplace', icon: <Palette className="h-3.5 w-3.5" /> },
-      { label: 'Katalog Produk', page: 'marketplace', icon: <BookOpen className="h-3.5 w-3.5" /> },
-      { label: 'Pemesanan Produk', page: 'marketplace', icon: <Package className="h-3.5 w-3.5" /> },
     ],
   },
   {
     label: 'Kependudukan',
     page: 'kependudukan',
     icon: <Users className="h-4 w-4" />,
-    emoji: '👨‍👩‍👧‍👦',
+    iconBg: 'bg-blue-100 text-blue-700',
     subItems: [
       { label: 'Data Penduduk', page: 'kependudukan', icon: <Users className="h-3.5 w-3.5" /> },
       { label: 'Statistik Penduduk', page: 'kependudukan', icon: <BarChart3 className="h-3.5 w-3.5" /> },
@@ -126,11 +131,11 @@ const navItems: NavItem[] = [
     label: 'Corporate University',
     page: 'corporate-university',
     icon: <GraduationCap className="h-4 w-4" />,
-    emoji: '🎓',
+    iconBg: 'bg-cyan-100 text-cyan-700',
     subItems: [
       { label: 'Pelatihan Digital', page: 'corporate-university', icon: <Monitor className="h-3.5 w-3.5" /> },
       { label: 'Pelatihan UMKM', page: 'corporate-university', icon: <ShoppingBag className="h-3.5 w-3.5" /> },
-      { label: 'Pelatihan Pertanian', page: 'corporate-university', icon: <Tractor className="h-3.5 w-3.5" /> },
+      { label: 'Pelatihan Pertanian', page: 'corporate-university', icon: <Sprout className="h-3.5 w-3.5" /> },
       { label: 'Video Pembelajaran', page: 'corporate-university', icon: <Video className="h-3.5 w-3.5" /> },
       { label: 'Sertifikat Pelatihan', page: 'corporate-university', icon: <Award className="h-3.5 w-3.5" /> },
     ],
@@ -139,7 +144,7 @@ const navItems: NavItem[] = [
     label: 'Literasi Digital',
     page: 'literasi',
     icon: <BookOpen className="h-4 w-4" />,
-    emoji: '📚',
+    iconBg: 'bg-indigo-100 text-indigo-700',
     subItems: [
       { label: 'Artikel Edukasi', page: 'literasi', icon: <FileText className="h-3.5 w-3.5" /> },
       { label: 'E-Book', page: 'literasi', icon: <BookOpenCheck className="h-3.5 w-3.5" /> },
@@ -152,21 +157,21 @@ const navItems: NavItem[] = [
     label: 'Console',
     page: 'konsol',
     icon: <BarChart3 className="h-4 w-4" />,
-    emoji: '📊',
+    iconBg: 'bg-teal-100 text-teal-700',
     subItems: [
       { label: 'Statistik Desa', page: 'konsol', icon: <BarChart3 className="h-3.5 w-3.5" /> },
       { label: 'Monitoring Layanan', page: 'konsol', icon: <Eye className="h-3.5 w-3.5" /> },
       { label: 'Analitik Pengunjung', page: 'konsol', icon: <TrendingUp className="h-3.5 w-3.5" /> },
       { label: 'Grafik Kependudukan', page: 'konsol', icon: <Users className="h-3.5 w-3.5" /> },
       { label: 'Grafik UMKM', page: 'konsol', icon: <ShoppingBag className="h-3.5 w-3.5" /> },
-      { label: 'Grafik Pertanian', page: 'konsol', icon: <Tractor className="h-3.5 w-3.5" /> },
+      { label: 'Grafik Pertanian', page: 'konsol', icon: <Sprout className="h-3.5 w-3.5" /> },
     ],
   },
   {
     label: 'Berita',
     page: 'berita',
     icon: <Newspaper className="h-4 w-4" />,
-    emoji: '📰',
+    iconBg: 'bg-rose-100 text-rose-700',
     subItems: [
       { label: 'Berita Desa', page: 'berita', icon: <Newspaper className="h-3.5 w-3.5" /> },
       { label: 'Pengumuman', page: 'berita', icon: <Megaphone className="h-3.5 w-3.5" /> },
@@ -178,7 +183,7 @@ const navItems: NavItem[] = [
 ];
 
 export default function Navbar() {
-  const { currentPage, setCurrentPage, user, setUser, cart, setMobileMenuOpen, mobileMenuOpen, clearCart, setChatOpen } = useAppStore();
+  const { currentPage, setCurrentPage, user, setUser, cart, setMobileMenuOpen, mobileMenuOpen, clearCart } = useAppStore();
   const [scrolled, setScrolled] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -211,7 +216,6 @@ export default function Navbar() {
     setMobileMenuOpen(false);
     setOpenDropdown(null);
     window.scrollTo(0, 0);
-    // Scroll to section after a small delay for page render
     if (section) {
       setTimeout(() => {
         const el = document.getElementById(`section-${section}`);
@@ -290,10 +294,13 @@ export default function Navbar() {
                   <div className={`absolute top-full left-0 mt-1 w-56 rounded-xl shadow-xl border overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150 ${
                     scrolled ? 'bg-white border-emerald-100' : 'bg-emerald-800 border-emerald-700'
                   }`}>
-                    <div className={`px-3 py-2 border-b font-semibold text-xs ${
+                    <div className={`px-3 py-2 border-b font-semibold text-xs flex items-center gap-2 ${
                       scrolled ? 'border-emerald-100 bg-emerald-50 text-emerald-800' : 'border-emerald-700 bg-emerald-900 text-emerald-100'
                     }`}>
-                      {item.emoji} {item.label}
+                      <span className={`w-6 h-6 rounded-md flex items-center justify-center ${item.iconBg}`}>
+                        {item.icon}
+                      </span>
+                      {item.label}
                     </div>
                     <div className="py-1 max-h-80 overflow-y-auto">
                       {item.subItems.map((sub, i) => (
@@ -317,34 +324,8 @@ export default function Navbar() {
             ))}
           </nav>
 
-          {/* Right side */}
+          {/* Right side - No chatbot/WhatsApp here */}
           <div className="flex items-center gap-1.5">
-            {/* AI Chatbot Button */}
-            <button
-              onClick={() => setChatOpen(true)}
-              className={`flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium transition-all ${
-                scrolled ? 'text-purple-600 hover:bg-purple-50' : 'text-purple-300 hover:bg-white/10'
-              }`}
-              title="AI Chatbot"
-            >
-              <Bot className="h-4 w-4" />
-              <span className="hidden lg:inline">Chatbot</span>
-            </button>
-
-            {/* WhatsApp Button */}
-            <a
-              href="https://wa.me/6285150859735"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`flex items-center gap-1 px-2 py-1.5 rounded-md text-[11px] font-medium transition-all ${
-                scrolled ? 'text-green-600 hover:bg-green-50' : 'text-green-300 hover:bg-white/10'
-              }`}
-              title="WhatsApp Center"
-            >
-              <MessageCircle className="h-4 w-4" />
-              <span className="hidden lg:inline">WhatsApp</span>
-            </a>
-
             {/* Cart */}
             {user && (
               <button
@@ -408,7 +389,9 @@ export default function Navbar() {
                             : 'text-gray-800 hover:bg-gray-50'
                         }`}
                       >
-                        <span className="text-base">{item.emoji}</span>
+                        <span className={`w-7 h-7 rounded-lg flex items-center justify-center ${item.iconBg}`}>
+                          {item.icon}
+                        </span>
                         {item.label}
                       </button>
                       {item.subItems && (
@@ -427,22 +410,6 @@ export default function Navbar() {
                       )}
                     </div>
                   ))}
-                  <div className="border-t my-2" />
-                  {/* AI Chatbot & WhatsApp in mobile */}
-                  <button
-                    onClick={() => { setMobileMenuOpen(false); setChatOpen(true); }}
-                    className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-purple-700 hover:bg-purple-50"
-                  >
-                    <Bot className="h-4 w-4" /> AI Chatbot
-                  </button>
-                  <a
-                    href="https://wa.me/6285150859735"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-green-700 hover:bg-green-50"
-                  >
-                    <MessageCircle className="h-4 w-4" /> WhatsApp Center
-                  </a>
                   <div className="border-t my-2" />
                   {user ? (
                     <>
