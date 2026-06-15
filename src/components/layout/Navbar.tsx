@@ -112,6 +112,7 @@ const navItems: NavItem[] = [
     iconBg: 'bg-orange-100 text-orange-700',
     subItems: [
       { label: 'Produk UMKM', path: '/marketplace', icon: <ShoppingCartIcon className="h-3.5 w-3.5" /> },
+      { label: 'E-Transaksi', path: '/order-history', icon: <FileText className="h-3.5 w-3.5" /> },
     ],
   },
   {
