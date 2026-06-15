@@ -34,7 +34,6 @@ interface ETransaction {
   transactionStatus: string;
   createdAt: string;
 }
-
 const statusLabels: Record<string, string> = {
   'PENDING': 'Menunggu',
   'PAID': 'Dibayar',
@@ -116,7 +115,8 @@ export default function MarketplacePage() {
     fetch('/api/products')
       .then((r) => r.json())
       .then((data) => {
-        setProducts(data.filter((p: Product) => p.category === 'UMKM'));
+        // Show UMKM and PERTANIAN products in marketplace
+        setProducts(data.filter((p: Product) => p.category === 'UMKM' || p.category === 'PERTANIAN'));
         setLoading(false);
       })
       .catch(() => setLoading(false));

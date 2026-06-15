@@ -20,17 +20,17 @@ import {
 
 interface ETransaction {
   id: string;
-  invoice_number: string;
-  buyer_name: string;
-  buyer_phone: string;
+  invoiceNumber: string;
+  buyerName: string;
+  buyerPhone: string;
   items: { name: string; quantity: number; price: number; subtotal: number }[];
-  total_amount: number;
-  payment_method: string;
-  payment_status: string;
-  transaction_status: string;
-  created_at: string;
-  user_id?: string;
-  order_id?: string;
+  totalAmount: number;
+  paymentMethod: string;
+  paymentStatus: string;
+  transactionStatus: string;
+  createdAt: string;
+  userId?: string;
+  orderId?: string;
 }
 
 const statusLabels: Record<string, string> = {
@@ -85,7 +85,7 @@ export default function AdminETransaksiPage() {
       if (res.ok) {
         fetchTransactions();
         if (selectedTx?.id === id) {
-          setSelectedTx({ ...selectedTx, transaction_status: newStatus, payment_status: newStatus === 'PAID' ? 'PAID' : selectedTx.payment_status });
+          setSelectedTx({ ...selectedTx, transactionStatus: newStatus, paymentStatus: newStatus === 'PAID' ? 'PAID' : selectedTx.paymentStatus });
         }
       }
     } catch (error) {
@@ -96,10 +96,10 @@ export default function AdminETransaksiPage() {
   const formatPrice = (price: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
 
   const filtered = transactions.filter((tx) => {
-    const matchesSearch = tx.invoice_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tx.buyer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tx.buyer_phone.includes(searchQuery);
-    const matchesStatus = statusFilter === 'ALL' || tx.transaction_status === statusFilter;
+    const matchesSearch = tx.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      tx.buyerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      tx.buyerPhone.includes(searchQuery);
+    const matchesStatus = statusFilter === 'ALL' || tx.transactionStatus === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
@@ -185,26 +185,26 @@ export default function AdminETransaksiPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3 flex-1 min-w-0">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                      tx.payment_method === 'QRIS' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'
+                      tx.paymentMethod === 'QRIS' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'
                     }`}>
-                      {tx.payment_method === 'QRIS' ? <QrCode className="h-5 w-5" /> : <CreditCard className="h-5 w-5" />}
+                      {tx.paymentMethod === 'QRIS' ? <QrCode className="h-5 w-5" /> : <CreditCard className="h-5 w-5" />}
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-bold text-sm text-gray-900">#{tx.invoice_number}</span>
-                        <Badge className={`${statusColors[tx.transaction_status] || 'bg-gray-100'} text-[10px]`}>
-                          {statusLabels[tx.transaction_status] || tx.transaction_status}
+                        <span className="font-bold text-sm text-gray-900">#{tx.invoiceNumber}</span>
+                        <Badge className={`${statusColors[tx.transactionStatus] || 'bg-gray-100'} text-[10px]`}>
+                          {statusLabels[tx.transactionStatus] || tx.transactionStatus}
                         </Badge>
                       </div>
-                      <p className="text-sm text-gray-700">{tx.buyer_name} &middot; {tx.buyer_phone}</p>
+                      <p className="text-sm text-gray-700">{tx.buyerName} &middot; {tx.buyerPhone}</p>
                       <p className="text-xs text-gray-500 mt-0.5">
-                        {tx.items?.length || 0} item &middot; {new Date(tx.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        {tx.items?.length || 0} item &middot; {new Date(tx.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="font-bold text-emerald-800">{formatPrice(tx.total_amount)}</p>
-                    <p className="text-[10px] text-gray-500 mt-0.5">{tx.payment_method}</p>
+                    <p className="font-bold text-emerald-800">{formatPrice(tx.totalAmount)}</p>
+                    <p className="text-[10px] text-gray-500 mt-0.5">{tx.paymentMethod}</p>
                   </div>
                 </div>
 
@@ -213,7 +213,7 @@ export default function AdminETransaksiPage() {
                   <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => setSelectedTx(selectedTx?.id === tx.id ? null : tx)}>
                     <Eye className="h-3 w-3 mr-1" /> Detail
                   </Button>
-                  {tx.transaction_status === 'PENDING' && (
+                  {tx.transactionStatus === 'PENDING' && (
                     <>
                       <Button size="sm" className="text-xs h-7 bg-blue-600 hover:bg-blue-700 text-white" onClick={() => updateStatus(tx.id, 'PAID')}>
                         <CheckCircle2 className="h-3 w-3 mr-1" /> Konfirmasi Bayar
@@ -223,13 +223,13 @@ export default function AdminETransaksiPage() {
                       </Button>
                     </>
                   )}
-                  {tx.transaction_status === 'PAID' && (
+                  {tx.transactionStatus === 'PAID' && (
                     <Button size="sm" className="text-xs h-7 bg-green-600 hover:bg-green-700 text-white" onClick={() => updateStatus(tx.id, 'COMPLETED')}>
                       <CheckCircle2 className="h-3 w-3 mr-1" /> Selesai
                     </Button>
                   )}
                   <Button size="sm" variant="outline" className="text-xs h-7 border-green-200 text-green-700" onClick={() => {
-                    const message = `E-Transaksi #${tx.invoice_number}\nTotal: ${formatPrice(tx.total_amount)}\nStatus: ${statusLabels[tx.transaction_status]}\nPembeli: ${tx.buyer_name}`;
+                    const message = `E-Transaksi #${tx.invoiceNumber}\nTotal: ${formatPrice(tx.totalAmount)}\nStatus: ${statusLabels[tx.transactionStatus]}\nPembeli: ${tx.buyerName}`;
                     window.open(`https://wa.me/6285150859735?text=${encodeURIComponent(message)}`, '_blank');
                   }}>
                     <MessageCircle className="h-3 w-3 mr-1" /> WA
@@ -250,7 +250,7 @@ export default function AdminETransaksiPage() {
                     </div>
                     <div className="border-t border-gray-200 mt-2 pt-2 flex justify-between">
                       <span className="text-sm font-bold">Total</span>
-                      <span className="text-sm font-bold text-emerald-700">{formatPrice(tx.total_amount)}</span>
+                      <span className="text-sm font-bold text-emerald-700">{formatPrice(tx.totalAmount)}</span>
                     </div>
                   </div>
                 )}

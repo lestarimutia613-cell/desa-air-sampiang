@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,13 +14,13 @@ interface OrderItem {
 
 interface Order {
   id: string;
-  invoice_number: string;
-  buyer_name: string;
-  buyer_phone: string;
-  total_amount: number;
+  invoiceNumber: string;
+  buyerName: string;
+  buyerPhone: string;
+  totalAmount: number;
   status: string;
-  payment_method: string;
-  created_at: string;
+  paymentMethod: string;
+  createdAt: string;
   items?: OrderItem[];
 }
 
@@ -30,6 +29,7 @@ const statusColors: Record<string, string> = {
   'PAID': 'bg-blue-100 text-blue-800',
   'PROCESSING': 'bg-purple-100 text-purple-800',
   'DELIVERED': 'bg-green-100 text-green-800',
+  'COMPLETED': 'bg-green-100 text-green-800',
   'CANCELLED': 'bg-red-100 text-red-800',
 };
 
@@ -38,26 +38,36 @@ const statusLabels: Record<string, string> = {
   'PAID': 'Dibayar',
   'PROCESSING': 'Diproses',
   'DELIVERED': 'Terkirim',
+  'COMPLETED': 'Selesai',
   'CANCELLED': 'Dibatalkan',
 };
 
 export default function AdminOrdersPage() {
-  const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('ALL');
 
   useEffect(() => {
-    const admin = localStorage.getItem('desa_admin');
-    if (!admin) { router.replace('/admin/login'); return; }
     fetchOrders();
-  }, [router]);
+  }, []);
 
   const fetchOrders = async () => {
     try {
       const res = await fetch('/api/orders?admin=true');
       const data = await res.json();
-      setOrders(data);
+      // Normalize both snake_case (Supabase) and camelCase (Prisma) to camelCase
+      const normalized = Array.isArray(data) ? data.map((o: Record<string, unknown>) => ({
+        id: o.id,
+        invoiceNumber: o.invoiceNumber ?? o.invoice_number ?? '',
+        buyerName: o.buyerName ?? o.buyer_name ?? '',
+        buyerPhone: o.buyerPhone ?? o.buyer_phone ?? '',
+        totalAmount: Number(o.totalAmount ?? o.total_amount ?? 0),
+        status: o.status ?? 'PENDING',
+        paymentMethod: o.paymentMethod ?? o.payment_method ?? '',
+        createdAt: o.createdAt ?? o.created_at ?? '',
+        items: o.items as OrderItem[] | undefined,
+      })) : [];
+      setOrders(normalized);
     } catch (e) {
       console.error(e);
     } finally {
@@ -91,7 +101,7 @@ export default function AdminOrdersPage() {
 
       {/* Filter */}
       <div className="flex flex-wrap gap-2">
-        {['ALL', 'PENDING', 'PAID', 'PROCESSING', 'DELIVERED', 'CANCELLED'].map((s) => (
+        {['ALL', 'PENDING', 'PAID', 'PROCESSING', 'DELIVERED', 'COMPLETED', 'CANCELLED'].map((s) => (
           <button
             key={s}
             onClick={() => setFilter(s)}
@@ -116,21 +126,21 @@ export default function AdminOrdersPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <p className="font-bold text-gray-900">{order.buyer_name}</p>
-                      <Badge className={statusColors[order.status]}>
-                        {statusLabels[order.status]}
+                      <p className="font-bold text-gray-900">{order.buyerName}</p>
+                      <Badge className={statusColors[order.status] || 'bg-gray-100'}>
+                        {statusLabels[order.status] || order.status}
                       </Badge>
                     </div>
-                    <p className="text-sm text-gray-500">Telepon: {order.buyer_phone}</p>
-                    <p className="text-sm text-gray-500">Pembayaran: {order.payment_method}</p>
+                    <p className="text-sm text-gray-500">Telepon: {order.buyerPhone}</p>
+                    <p className="text-sm text-gray-500">Pembayaran: {order.paymentMethod}</p>
                     {order.items && order.items.map((item, i) => (
                       <p key={i} className="text-xs text-gray-400">
                         {item.product?.name} x{item.quantity} = {formatPrice(item.price * item.quantity)}
                       </p>
                     ))}
-                    <p className="font-bold text-orange-600 mt-2">Total: {formatPrice(order.total_amount)}</p>
+                    <p className="font-bold text-orange-600 mt-2">Total: {formatPrice(order.totalAmount)}</p>
                     <p className="text-xs text-gray-400 mt-1">
-                      {new Date(order.created_at).toLocaleString('id-ID')}
+                      {new Date(order.createdAt).toLocaleString('id-ID')}
                     </p>
                   </div>
                   <div className="flex flex-col gap-2">

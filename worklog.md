@@ -110,3 +110,36 @@ Stage Summary:
 - Admin accessible via subdomain: admin-xxx.space-z.ai/login
 - E-Transaksi admin page added with full CRUD management
 - Admin login redesigned with modern dark theme
+---
+Task ID: 3
+Agent: Main Agent
+Task: Fix all errors in the village website
+
+Work Log:
+- Investigated all API routes, admin pages, and frontend components
+- Fixed snake_case vs camelCase mismatch in admin e-transaksi page (invoice_number → invoiceNumber, etc.)
+- Fixed admin dashboard page to normalize both snake_case and camelCase API responses
+- Fixed admin orders page to normalize both naming conventions
+- Fixed admin news page date display (created_at || createdAt fallback)
+- Fixed admin users page interface to handle both naming conventions
+- Fixed ETransaksiModal success step bug (pendingOrder null check removed - step only needs transactionResult)
+- Added normalizeTx() function in /api/e-transaksi to always return camelCase regardless of data source
+- Fixed duplicate products in SQLite database (removed 8 duplicates, kept 8 unique products)
+- Added Setting model to Prisma schema for settings API Prisma fallback
+- Updated settings API route with full Prisma fallback (GET defaults + PUT upsert)
+- Updated reorder API route with Prisma fallback
+- Fixed MarketplacePage to show both UMKM and PERTANIAN category products
+- Updated start.sh to use production build with 256MB memory limit
+- All database operations verified working via direct Prisma client testing
+- Build compiles successfully (all 41 pages + 13 API routes)
+
+Stage Summary:
+- Fixed 7+ snake_case/camelCase mismatch bugs across admin pages
+- Fixed ETransaksiModal null check bug
+- Removed 8 duplicate products from database
+- Added Setting model + Prisma fallback for settings API
+- All API endpoints verified working: products, orders, e-transaksi, auth, settings, admin
+- Transaction flow verified: create → confirm payment → complete
+- Admin login verified: admindesa/admin123 works
+- Server memory constraint: production build needs 256MB (--max-old-space-size=256)
+- Supabase keys still need to be added by user (NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY)

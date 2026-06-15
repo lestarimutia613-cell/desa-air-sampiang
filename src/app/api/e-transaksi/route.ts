@@ -16,6 +16,33 @@ function generateQRISContent(invoiceNumber: string, amount: number): string {
   return `00020101021226580014COM.GO-JEK.WWW0118936009140336118750215ID10200032110303UME51440014ID.CO.QRIS.WWW0215ID20200032110303UME5204581253033605802ID5915DESA AIR SEMPIANG6007JAKARTA61051234062240520${timestamp}0703UME6304AMT${amount}INV${invoiceNumber}`;
 }
 
+// Normalize Supabase snake_case to camelCase
+function normalizeTx(t: Record<string, unknown>) {
+  return {
+    id: t.id,
+    invoiceNumber: t.invoice_number ?? t.invoiceNumber,
+    orderId: t.order_id ?? t.orderId ?? null,
+    userId: t.user_id ?? t.userId ?? null,
+    buyerName: t.buyer_name ?? t.buyerName,
+    buyerPhone: t.buyer_phone ?? t.buyerPhone,
+    buyerEmail: t.buyer_email ?? t.buyerEmail ?? null,
+    items: typeof t.items === 'string' ? JSON.parse(t.items) : (t.items || []),
+    totalAmount: Number(t.total_amount ?? t.totalAmount ?? 0),
+    paymentMethod: t.payment_method ?? t.paymentMethod ?? 'QRIS',
+    paymentStatus: t.payment_status ?? t.paymentStatus ?? 'PENDING',
+    transactionStatus: t.transaction_status ?? t.transactionStatus ?? 'PENDING',
+    qrisContent: t.qris_content ?? t.qrisContent ?? null,
+    whSentCount: t.wh_sent_count ?? t.whSentCount ?? 0,
+    whLastSentAt: t.wh_last_sent_at ?? t.whLastSentAt ?? null,
+    notes: t.notes ?? null,
+    paidAt: t.paid_at ?? t.paidAt ?? null,
+    completedAt: t.completed_at ?? t.completedAt ?? null,
+    cancelledAt: t.cancelled_at ?? t.cancelledAt ?? null,
+    createdAt: t.created_at ?? t.createdAt,
+    updatedAt: t.updated_at ?? t.updatedAt,
+  };
+}
+
 // GET /api/e-transaksi
 export async function GET(request: NextRequest) {
   try {
@@ -32,7 +59,7 @@ export async function GET(request: NextRequest) {
           .eq('id', id)
           .single();
         if (error || !data) return NextResponse.json({ error: 'Transaksi tidak ditemukan' }, { status: 404 });
-        return NextResponse.json({ ...data, items: typeof data.items === 'string' ? JSON.parse(data.items) : data.items });
+        return NextResponse.json(normalizeTx(data));
       }
 
       let query = supabaseAdmin
@@ -46,18 +73,15 @@ export async function GET(request: NextRequest) {
       const { data: transactions, error } = await query;
       if (error) return NextResponse.json({ error: 'Gagal memuat e-transaksi' }, { status: 500 });
 
-      const parsed = (transactions || []).map((t: any) => ({
-        ...t,
-        items: typeof t.items === 'string' ? JSON.parse(t.items) : t.items,
-      }));
+      const parsed = (transactions || []).map(normalizeTx);
 
       const stats = {
         total: parsed.length,
-        pending: parsed.filter((t: any) => t.transaction_status === 'PENDING').length,
-        paid: parsed.filter((t: any) => t.transaction_status === 'PAID').length,
-        completed: parsed.filter((t: any) => t.transaction_status === 'COMPLETED').length,
-        cancelled: parsed.filter((t: any) => t.transaction_status === 'CANCELLED').length,
-        totalRevenue: parsed.filter((t: any) => t.transaction_status === 'COMPLETED').reduce((s: number, t: any) => s + (t.total_amount || 0), 0),
+        pending: parsed.filter((t) => t.transactionStatus === 'PENDING').length,
+        paid: parsed.filter((t) => t.transactionStatus === 'PAID').length,
+        completed: parsed.filter((t) => t.transactionStatus === 'COMPLETED').length,
+        cancelled: parsed.filter((t) => t.transactionStatus === 'CANCELLED').length,
+        totalRevenue: parsed.filter((t) => t.transactionStatus === 'COMPLETED').reduce((s, t) => s + t.totalAmount, 0),
       };
 
       return NextResponse.json({ transactions: parsed, stats });
@@ -143,7 +167,6 @@ export async function POST(request: NextRequest) {
         if (!orderError && order) {
           orderId = order.id;
 
-          // Create order items
           const orderItems = items
             .filter((item: { productId: string }) => item.productId)
             .map((item: { productId: string; quantity: number; price: number }) => ({
@@ -157,7 +180,6 @@ export async function POST(request: NextRequest) {
             await supabaseAdmin.from('order_items').insert(orderItems);
           }
 
-          // Create payment proof
           await supabaseAdmin.from('payment_proofs').insert({
             order_id: order.id,
             invoice_number: `INV-${invoiceNumber.split('-').slice(1).join('-')}`,
@@ -169,7 +191,6 @@ export async function POST(request: NextRequest) {
             status: 'PENDING',
           });
 
-          // Update stock
           for (const item of items.filter((i: { productId: string }) => i.productId)) {
             const { data: product } = await supabaseAdmin
               .from('products')
@@ -186,7 +207,6 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Create e-transaction
       const { data: transaction, error: txError } = await supabaseAdmin
         .from('e_transactions')
         .insert({
@@ -211,10 +231,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Gagal membuat e-transaksi' }, { status: 500 });
       }
 
-      return NextResponse.json({
-        ...transaction,
-        items: typeof transaction.items === 'string' ? JSON.parse(transaction.items) : transaction.items,
-      });
+      return NextResponse.json(normalizeTx(transaction));
     }
 
     // Prisma fallback
@@ -252,7 +269,6 @@ export async function POST(request: NextRequest) {
       });
       orderId = order.id;
 
-      // Update stock
       for (const item of items.filter((i: { productId: string }) => i.productId)) {
         try {
           await db.product.update({
@@ -309,7 +325,6 @@ export async function PUT(request: NextRequest) {
       if (paymentStatus) updateData.payment_status = paymentStatus;
       if (notes !== undefined) updateData.notes = notes;
       if (whSent) {
-        // Fetch current to increment
         const { data: current } = await supabaseAdmin
           .from('e_transactions')
           .select('wh_sent_count')
@@ -339,10 +354,7 @@ export async function PUT(request: NextRequest) {
           .eq('id', transaction.order_id);
       }
 
-      return NextResponse.json({
-        ...transaction,
-        items: typeof transaction.items === 'string' ? JSON.parse(transaction.items) : transaction.items,
-      });
+      return NextResponse.json(normalizeTx(transaction));
     }
 
     // Prisma fallback

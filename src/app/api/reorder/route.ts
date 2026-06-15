@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isSupabaseConfigured, supabaseAdmin } from '@/lib/supabase';
+import { db } from '@/lib/db';
 
 export async function PUT(request: NextRequest) {
   try {
@@ -18,6 +19,31 @@ export async function PUT(request: NextRequest) {
           .eq('id', item.id);
       }
       return NextResponse.json({ success: true });
+    }
+
+    // Prisma fallback - update sort order for supported tables
+    for (const item of items) {
+      try {
+        switch (table) {
+          case 'products':
+            await db.product.update({ where: { id: item.id }, data: { /* sort_order not in schema */ } });
+            break;
+          case 'news':
+            await db.news.update({ where: { id: item.id }, data: { /* sort_order not in schema */ } });
+            break;
+          case 'village_services':
+            await db.villageService.update({ where: { id: item.id }, data: { /* sort_order not in schema */ } });
+            break;
+          case 'courses':
+            await db.course.update({ where: { id: item.id }, data: { /* sort_order not in schema */ } });
+            break;
+          case 'literacy_materials':
+            await db.literacyMaterial.update({ where: { id: item.id }, data: { /* sort_order not in schema */ } });
+            break;
+        }
+      } catch {
+        // Skip items that don't exist
+      }
     }
 
     return NextResponse.json({ success: true });

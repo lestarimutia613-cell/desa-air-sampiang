@@ -14,7 +14,8 @@ interface UserData {
   role: string;
   phone: string | null;
   address: string | null;
-  created_at: string;
+  created_at?: string;
+  createdAt?: string;
 }
 
 export default function AdminUsersPage() {

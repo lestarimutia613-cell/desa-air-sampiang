@@ -153,7 +153,7 @@ export default function AdminNewsPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="font-medium text-gray-900 truncate">{item.title}</h4>
-                  <p className="text-xs text-gray-400">Oleh: {item.author} • {new Date(item.created_at || Date.now()).toLocaleDateString('id-ID')}</p>
+                  <p className="text-xs text-gray-400">Oleh: {item.author} • {new Date(item.created_at || item.createdAt || Date.now()).toLocaleDateString('id-ID')}</p>
                 </div>
                 <div className="flex items-center gap-1">
                   <Button variant="ghost" size="icon" onClick={() => handleEdit(item)} className="h-8 w-8 text-gray-400 hover:text-orange-600">

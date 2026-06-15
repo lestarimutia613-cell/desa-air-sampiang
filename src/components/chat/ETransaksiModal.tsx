@@ -293,7 +293,7 @@ Kec. Kabawetan, Kab. Kepahiang, Bengkulu`;
   }
 
   // ====== SUCCESS STEP ======
-  if (step === 'success' && transactionResult && pendingOrder) {
+  if (step === 'success' && transactionResult) {
     const date = new Date(transactionResult.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     const time = new Date(transactionResult.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     const isPaid = transactionResult.transactionStatus === 'PAID';

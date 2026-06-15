@@ -23,12 +23,12 @@ interface OrderItem {
 
 interface Order {
   id: string;
-  buyer_name: string;
-  buyer_phone: string;
-  total_amount: number;
+  buyerName: string;
+  buyerPhone: string;
+  totalAmount: number;
   status: string;
-  payment_method: string;
-  created_at: string;
+  paymentMethod: string;
+  createdAt: string;
   items?: OrderItem[];
 }
 
@@ -37,6 +37,7 @@ const statusColors: Record<string, string> = {
   'PAID': 'bg-blue-100 text-blue-800',
   'PROCESSING': 'bg-purple-100 text-purple-800',
   'DELIVERED': 'bg-green-100 text-green-800',
+  'COMPLETED': 'bg-green-100 text-green-800',
   'CANCELLED': 'bg-red-100 text-red-800',
 };
 
@@ -45,6 +46,7 @@ const statusLabels: Record<string, string> = {
   'PAID': 'Dibayar',
   'PROCESSING': 'Diproses',
   'DELIVERED': 'Terkirim',
+  'COMPLETED': 'Selesai',
   'CANCELLED': 'Dibatalkan',
 };
 
@@ -59,7 +61,18 @@ export default function AdminDashboard() {
       fetch('/api/orders?admin=true').then((r) => r.json()),
     ]).then(([s, o]) => {
       setStats(s);
-      setOrders(o);
+      // Normalize both snake_case (Supabase) and camelCase (Prisma)
+      const normalized = Array.isArray(o) ? o.map((order: Record<string, unknown>) => ({
+        id: order.id,
+        buyerName: order.buyerName ?? order.buyer_name ?? '',
+        buyerPhone: order.buyerPhone ?? order.buyer_phone ?? '',
+        totalAmount: Number(order.totalAmount ?? order.total_amount ?? 0),
+        status: order.status ?? 'PENDING',
+        paymentMethod: order.paymentMethod ?? order.payment_method ?? '',
+        createdAt: order.createdAt ?? order.created_at ?? '',
+        items: order.items as OrderItem[] | undefined,
+      })) : [];
+      setOrders(normalized);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
@@ -131,16 +144,16 @@ export default function AdminDashboard() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate">
-                      {order.buyer_name} - {order.items?.map((i) => i.product?.name).join(', ')}
+                      {order.buyerName} - {order.items?.map((i) => i.product?.name).join(', ')}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {new Date(order.created_at).toLocaleDateString('id-ID')}
+                      {new Date(order.createdAt).toLocaleDateString('id-ID')}
                     </p>
                   </div>
                   <Badge className={statusColors[order.status] || 'bg-gray-100'}>
                     {statusLabels[order.status] || order.status}
                   </Badge>
-                  <p className="font-medium text-sm">{formatPrice(order.total_amount)}</p>
+                  <p className="font-medium text-sm">{formatPrice(order.totalAmount)}</p>
                 </div>
               ))
             )}
@@ -158,7 +171,7 @@ export default function AdminDashboard() {
           { title: 'Kelola Kursus', desc: 'Atur program Corporate University', count: stats?.totalCourses || 0, href: '/admin/courses' },
           { title: 'Pengaturan', desc: 'Konfigurasi website desa', count: 0, href: '/admin/settings' },
         ].map((item, i) => (
-          <Card key={i} className="border-gray-200 hover:shadow-md transition-shadow cursor-pointer group">
+          <Card key={i} className="border-gray-200 hover:shadow-md transition-shadow cursor-pointer group" onClick={() => window.location.href = item.href}>
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-bold text-gray-900 text-sm">{item.title}</h4>
