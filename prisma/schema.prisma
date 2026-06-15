@@ -165,3 +165,27 @@ model ServiceApplication {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
+
+model ETransaction {
+  id              String   @id @default(cuid())
+  invoiceNumber   String   @unique
+  orderId         String?  
+  userId          String?
+  buyerName       String
+  buyerPhone      String
+  buyerEmail      String?
+  items           String   @default("[]")
+  totalAmount     Float
+  paymentMethod   String   @default("QRIS")
+  paymentStatus   String   @default("PENDING")
+  transactionStatus String @default("PENDING")
+  qrisContent     String?
+  whSentCount     Int      @default(0)
+  whLastSentAt    DateTime?
+  notes           String?
+  paidAt          DateTime?
+  completedAt     DateTime?
+  cancelledAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

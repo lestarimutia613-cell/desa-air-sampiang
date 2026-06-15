@@ -222,43 +222,6 @@ Kec. Kabawetan, Kab. Kepahiang, Bengkulu`;
     URL.revokeObjectURL(url);
   };
 
-  // Generate SVG QR Code
-  const generateQRSVG = () => {
-    // Simulated QR pattern - in production use a real QR library
-    const modules = 21;
-    const cellSize = 8;
-    const size = modules * cellSize;
-    
-    // Create a deterministic pattern based on the QRIS content
-    let rects = '';
-    const seed = qrisContent.length;
-    for (let row = 0; row < modules; row++) {
-      for (let col = 0; col < modules; col++) {
-        // Finder patterns (3 corners)
-        const isTopLeft = row < 7 && col < 7;
-        const isTopRight = row < 7 && col >= modules - 7;
-        const isBottomLeft = row >= modules - 7 && col < 7;
-        
-        if (isTopLeft || isTopRight || isBottomLeft) {
-          const r = isTopLeft ? row : isBottomLeft ? row - (modules - 7) : row;
-          const c = isTopLeft ? col : isTopRight ? col - (modules - 7) : col;
-          const isBorder = r === 0 || r === 6 || c === 0 || c === 6;
-          const isInner = r >= 2 && r <= 4 && c >= 2 && c <= 4;
-          if (isBorder || isInner) {
-            rects += `<rect x="${col * cellSize}" y="${row * cellSize}" width="${cellSize}" height="${cellSize}" fill="#065f46"/>`;
-          }
-        } else if ((row + col + seed) % 3 === 0 || (row * col + seed) % 5 === 0) {
-          rects += `<rect x="${col * cellSize}" y="${row * cellSize}" width="${cellSize}" height="${cellSize}" fill="#065f46"/>`;
-        }
-      }
-    }
-    
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
-      <rect width="${size}" height="${size}" fill="white" rx="4"/>
-      ${rects}
-    </svg>`;
-  };
-
   // Order Success / E-Transaksi View
   if (orderResult) {
     const date = new Date(orderResult.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });

@@ -23,3 +23,36 @@ Stage Summary:
 - Riwayat transaksi tetap bisa diakses via /order-history dan tombol di marketplace
 - Key files changed: Navbar.tsx, MarketplacePage.tsx, PaymentPage.tsx
 - Key files created: ETransaksiModal.tsx
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Full-stack implementation of E-Transaksi with QRIS & WhatsApp
+
+Work Log:
+- Updated Prisma schema with ETransaction model (full transaction tracking with WA send count, timestamps)
+- Pushed schema to database (db:push)
+- Created /api/e-transaksi API route with full CRUD (GET, POST, PUT, DELETE)
+- API creates e-transactions + orders simultaneously, updates stock
+- API tracks WhatsApp send count and last sent timestamp
+- API supports status updates (PENDING → PAID → COMPLETED → CANCELLED)
+- Rebuilt ETransaksiModal with 3-step flow (summary → payment → success)
+- ETransaksiModal integrates with /api/e-transaksi for full backend persistence
+- Rebuilt MarketplacePage with E-Transaksi panel showing recent transactions from DB
+- MarketplacePage fetches transaction stats from API
+- Rebuilt OrderHistoryPage using /api/e-transaksi API instead of /api/orders
+- Added "Sudah Bayar" and "Tandai Selesai" buttons with API status updates
+- Updated PaymentPage to use QRCodeSVG (real QR codes)
+- Removed simulated generateQRSVG function
+- Fixed lint errors (set-state-in-effect)
+- All API endpoints tested: GET, POST, PUT work correctly
+- Browser verification: all pages load without errors
+
+Stage Summary:
+- Full-stack E-Transaksi system implemented (DB → API → Frontend)
+- Prisma ETransaction model with invoice, items JSON, QRIS content, WA tracking
+- API: /api/e-transaksi (GET list, POST create, PUT update)
+- Frontend: Modal checkout, marketplace transaction panel, order history page
+- QRIS: Real QR codes using qrcode.react
+- WhatsApp: Send e-transaksi with tracking (whSentCount, whLastSentAt)
+- Status flow: PENDING → PAID → COMPLETED (with confirm buttons)
