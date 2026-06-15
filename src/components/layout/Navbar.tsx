@@ -112,7 +112,6 @@ const navItems: NavItem[] = [
     iconBg: 'bg-orange-100 text-orange-700',
     subItems: [
       { label: 'Produk UMKM', path: '/marketplace', icon: <ShoppingCartIcon className="h-3.5 w-3.5" /> },
-      { label: 'E-Transaksi', path: '/order-history', icon: <FileText className="h-3.5 w-3.5" /> },
     ],
   },
   {
@@ -423,12 +422,6 @@ export default function Navbar() {
                   <div className="border-t my-2" />
                   {user ? (
                     <>
-                      <button
-                        onClick={() => { handleNav('/order-history'); }}
-                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50"
-                      >
-                        <Package className="h-4 w-4" /> Riwayat Pesanan
-                      </button>
                       <button
                         onClick={handleLogout}
                         className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50"

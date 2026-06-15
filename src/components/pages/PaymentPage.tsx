@@ -29,6 +29,7 @@ import {
   ShieldCheck,
   Zap,
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function PaymentPage() {
   const router = useRouter();
@@ -375,9 +376,9 @@ Kec. Kabawetan, Kab. Kepahiang, Bengkulu`;
                     <div className="border-t border-dashed border-gray-200" />
                     <div className="bg-white border-2 border-emerald-200 rounded-xl p-4 text-center">
                       <p className="text-xs font-bold text-emerald-700 mb-3">SCAN QRIS UNTUK BAYAR</p>
-                      <div className="w-44 h-44 mx-auto bg-white p-2 rounded-lg border border-gray-100 shadow-inner flex items-center justify-center"
-                        dangerouslySetInnerHTML={{ __html: generateQRSVG() }}
-                      />
+                      <div className="w-44 h-44 mx-auto bg-white p-2 rounded-lg border border-gray-100 shadow-inner flex items-center justify-center">
+                        <QRCodeSVG value={qrisContent} size={160} bgColor="#FFFFFF" fgColor="#065f46" level="M" />
+                      </div>
                       <p className="text-[10px] text-gray-400 mt-2">Scan dengan e-wallet atau mobile banking</p>
                       <p className="text-sm font-bold text-emerald-800 mt-1">{formatPrice(pendingOrder.total)}</p>
                     </div>
@@ -563,9 +564,9 @@ Kec. Kabawetan, Kab. Kepahiang, Bengkulu`;
                   <p className="font-bold text-emerald-800 text-sm">Pembayaran QRIS</p>
                   <Badge className="bg-emerald-100 text-emerald-700 text-[9px] ml-auto">Scan & Bayar</Badge>
                 </div>
-                <div className="w-40 h-40 mx-auto bg-white p-2 rounded-lg border border-gray-100 shadow-inner flex items-center justify-center mb-3"
-                  dangerouslySetInnerHTML={{ __html: generateQRSVG() }}
-                />
+                <div className="w-40 h-40 mx-auto bg-white p-2 rounded-lg border border-gray-100 shadow-inner flex items-center justify-center mb-3">
+                  <QRCodeSVG value={qrisContent} size={140} bgColor="#FFFFFF" fgColor="#065f46" level="M" />
+                </div>
                 <div className="text-center">
                   <p className="text-xs text-gray-500 mb-1">Scan dengan e-wallet atau mobile banking</p>
                   <p className="text-lg font-bold text-emerald-800">{formatPrice(pendingOrder.total)}</p>

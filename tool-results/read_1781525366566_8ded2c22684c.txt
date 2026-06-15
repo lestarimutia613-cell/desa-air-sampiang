@@ -1,0 +1,678 @@
+     1→'use client';
+     2→
+     3→import { useState } from 'react';
+     4→import { useRouter } from 'next/navigation';
+     5→import { useAppStore } from '@/lib/store';
+     6→import { Button } from '@/components/ui/button';
+     7→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+     8→import { Input } from '@/components/ui/input';
+     9→import { Label } from '@/components/ui/label';
+    10→import { Badge } from '@/components/ui/badge';
+    11→import { Separator } from '@/components/ui/separator';
+    12→import {
+    13→  CreditCard,
+    14→  Smartphone,
+    15→  Building2,
+    16→  Receipt,
+    17→  Printer,
+    18→  CheckCircle2,
+    19→  ArrowLeft,
+    20→  Package,
+    21→  AlertCircle,
+    22→  QrCode,
+    23→  Copy,
+    24→  Check,
+    25→  Download,
+    26→  Share2,
+    27→  MessageCircle,
+    28→  Clock,
+    29→  ShieldCheck,
+    30→  Zap,
+    31→} from 'lucide-react';
+    32→
+    33→export default function PaymentPage() {
+    34→  const router = useRouter();
+    35→  const { user, pendingOrder, clearCart } = useAppStore();
+    36→  const [paymentMethod, setPaymentMethod] = useState('QRIS');
+    37→  const [buyerName, setBuyerName] = useState(user?.name || '');
+    38→  const [buyerPhone, setBuyerPhone] = useState(user?.phone || '');
+    39→  const [bankAccount, setBankAccount] = useState('');
+    40→  const [bankName, setBankName] = useState('');
+    41→  const [loading, setLoading] = useState(false);
+    42→  const [orderResult, setOrderResult] = useState<any>(null);
+    43→  const [error, setError] = useState('');
+    44→  const [copied, setCopied] = useState(false);
+    45→  const [showQRIS, setShowQRIS] = useState(false);
+    46→
+    47→  if (!user || !pendingOrder) {
+    48→    return (
+    49→      <div className="py-12 min-h-[60vh] flex items-center justify-center">
+    50→        <Card className="max-w-md">
+    51→          <CardContent className="p-6 text-center">
+    52→            <p className="text-gray-600 mb-4">Tidak ada pesanan yang sedang diproses</p>
+    53→            <Button onClick={() => router.push('/marketplace')} className="bg-emerald-600 hover:bg-emerald-700">
+    54→              Kembali ke Marketplace
+    55→            </Button>
+    56→          </CardContent>
+    57→        </Card>
+    58→      </div>
+    59→    );
+    60→  }
+    61→
+    62→  const formatPrice = (price: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
+    63→
+    64→  // Generate QRIS content (simulated - in production this would come from a payment gateway)
+    65→  const qrisContent = `00020101021226580014COM.GO-JEK.WWW0118936009140336118750215ID10200032110303UME51440014ID.CO.QRIS.WWW0215ID20200032110303UME5204581253033605802ID5915DESA AIR SEMPIANG6007JAKARTA61051234062240520${Date.now().toString().slice(-8)}0703UME6304`;
+    66→
+    67→  const paymentOptions = [
+    68→    { 
+    69→      value: 'QRIS', 
+    70→      label: 'QRIS', 
+    71→      icon: <QrCode className="h-5 w-5" />, 
+    72→      detail: 'Scan QR code menggunakan e-wallet atau mobile banking manapun',
+    73→      badge: 'Rekomendasi',
+    74→      badgeColor: 'bg-emerald-100 text-emerald-700',
+    75→      popular: true,
+    76→    },
+    77→    { value: 'BANK_BRI', label: 'Bank BRI', icon: <Building2 className="h-5 w-5" />, detail: 'Transfer ke BRI: 0012-01-000456-789 (Desa Air Sempiang)' },
+    78→    { value: 'BANK_MANDIRI', label: 'Bank Mandiri', icon: <Building2 className="h-5 w-5" />, detail: 'Transfer ke Mandiri: 123-000-456-7890 (Desa Air Sempiang)' },
+    79→    { value: 'BANK_BNI', label: 'Bank BNI', icon: <Building2 className="h-5 w-5" />, detail: 'Transfer ke BNI: 0098-765-4321 (Desa Air Sempiang)' },
+    80→    { value: 'GOPAY', label: 'GoPay', icon: <Smartphone className="h-5 w-5" />, detail: 'Kirim ke 085150859735 a.n. Desa Air Sempiang' },
+    81→    { value: 'OVO', label: 'OVO', icon: <Smartphone className="h-5 w-5" />, detail: 'Kirim ke 085150859735 a.n. Desa Air Sempiang' },
+    82→    { value: 'DANA', label: 'DANA', icon: <Smartphone className="h-5 w-5" />, detail: 'Kirim ke 085150859735 a.n. Desa Air Sempiang' },
+    83→  ];
+    84→
+    85→  const selectedPayment = paymentOptions.find((p) => p.value === paymentMethod);
+    86→  const isBank = paymentMethod.startsWith('BANK');
+    87→  const isQRIS = paymentMethod === 'QRIS';
+    88→
+    89→  const handleCopyQRIS = () => {
+    90→    navigator.clipboard.writeText(qrisContent);
+    91→    setCopied(true);
+    92→    setTimeout(() => setCopied(false), 2000);
+    93→  };
+    94→
+    95→  const handlePayment = async () => {
+    96→    if (!buyerName || !buyerPhone) {
+    97→      setError('Nama dan nomor telepon pembeli wajib diisi');
+    98→      return;
+    99→    }
+   100→    setError('');
+   101→    setLoading(true);
+   102→
+   103→    try {
+   104→      const res = await fetch('/api/orders', {
+   105→        method: 'POST',
+   106→        headers: { 'Content-Type': 'application/json' },
+   107→        body: JSON.stringify({
+   108→          userId: user.id,
+   109→          items: pendingOrder.items.map((item) => ({
+   110→            productId: item.productId,
+   111→            quantity: item.quantity,
+   112→            price: item.price,
+   113→            name: item.name,
+   114→          })),
+   115→          paymentMethod,
+   116→          buyerName,
+   117→          buyerPhone,
+   118→          bankAccount: isBank ? bankAccount : undefined,
+   119→          bankName: isBank ? bankName : undefined,
+   120→        }),
+   121→      });
+   122→
+   123→      const data = await res.json();
+   124→      if (!res.ok) {
+   125→        setError(data.error || 'Gagal membuat pesanan');
+   126→        return;
+   127→      }
+   128→
+   129→      setOrderResult(data);
+   130→      clearCart();
+   131→    } catch {
+   132→      setError('Gagal terhubung ke server');
+   133→    } finally {
+   134→      setLoading(false);
+   135→    }
+   136→  };
+   137→
+   138→  // Generate WhatsApp e-transaction message
+   139→  const generateWhatsAppMessage = () => {
+   140→    if (!orderResult) return '';
+   141→    const items = pendingOrder.items.map((item) => `• ${item.name} x${item.quantity} = ${formatPrice(item.price * item.quantity)}`).join('\n');
+   142→    const date = new Date(orderResult.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+   143→    const time = new Date(orderResult.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+   144→
+   145→    return `🧾 *E-TRANSAKSI DIGITAL*
+   146→*Desa Air Sempiang Digital*
+   147→━━━━━━━━━━━━━━━━━━
+   148→
+   149→Dear ${buyerName},
+   150→
+   151→Terima kasih sudah berbelanja di *Marketplace Desa Air Sempiang* 🎉
+   152→
+   153→📋 *Detail E-Transaksi:*
+   154→No. Invoice: *${orderResult.invoiceNumber}*
+   155→Tanggal: ${date}, ${time} WIB
+   156→Status: *E-TRANSAKSI TERVERIFIKASI*
+   157→
+   158→📦 *Item Pesanan:*
+   159→${items}
+   160→
+   161→━━━━━━━━━━━━━━━━━━
+   162→💰 *Total Pembayaran: ${formatPrice(pendingOrder.total)}*
+   163→
+   164→💳 *Metode Pembayaran:*
+   165→${selectedPayment?.label}
+   166→${selectedPayment?.detail}
+   167→
+   168→${isQRIS ? '✅ Pembayaran QRIS - Scan & Bayar\n📱 Status: Menunggu Scan QR' : '📌 *Status: MENUNGGU PEMBAYARAN*'}
+   169→
+   170→Mohon lakukan pembayaran sesuai metode di atas, lalu kirim bukti pembayaran ke nomor ini.
+   171→
+   172→Salam hormat,
+   173→*E-Transaksi Desa Air Sempiang*
+   174→Kec. Kabawetan, Kab. Kepahiang, Bengkulu`;
+   175→  };
+   176→
+   177→  const handlePrint = () => {
+   178→    const printContent = document.getElementById('receipt-content');
+   179→    if (!printContent) return;
+   180→    const printWindow = window.open('', '_blank');
+   181→    if (!printWindow) return;
+   182→    printWindow.document.write(`
+   183→      <html><head><title>E-Transaksi - Desa Air Sempiang</title>
+   184→      <style>
+   185→        body { font-family: 'Courier New', monospace; padding: 20px; color: #333; max-width: 400px; margin: 0 auto; }
+   186→        .header { text-align: center; border-bottom: 2px dashed #065f46; padding-bottom: 12px; margin-bottom: 16px; }
+   187→        .header h1 { color: #065f46; margin: 0; font-size: 16px; }
+   188→        .header p { margin: 4px 0; font-size: 11px; color: #666; }
+   189→        .row { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; }
+   190→        .row-bold { font-weight: bold; font-size: 14px; }
+   191→        .separator { border-top: 1px dashed #ccc; margin: 8px 0; }
+   192→        .title { font-weight: bold; font-size: 13px; color: #065f46; margin: 8px 0 4px; }
+   193→        .item { font-size: 12px; padding: 2px 0; }
+   194→        .footer { margin-top: 16px; text-align: center; font-size: 10px; color: #999; border-top: 1px dashed #ccc; padding-top: 8px; }
+   195→        .badge { display: inline-block; background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+   196→        .qris-box { text-align: center; padding: 12px; border: 2px solid #065f46; border-radius: 8px; margin: 8px 0; }
+   197→        .qris-box svg { width: 180px; height: 180px; }
+   198→      </style></head><body>
+   199→      ${printContent.innerHTML}
+   200→      </body></html>
+   201→    `);
+   202→    printWindow.document.close();
+   203→    printWindow.print();
+   204→  };
+   205→
+   206→  const handleSendWhatsApp = () => {
+   207→    const message = generateWhatsAppMessage();
+   208→    const url = `https://wa.me/6285150859735?text=${encodeURIComponent(message)}`;
+   209→    window.open(url, '_blank');
+   210→  };
+   211→
+   212→  const handleDownloadReceipt = () => {
+   213→    const receipt = document.getElementById('receipt-content');
+   214→    if (!receipt) return;
+   215→    const blob = new Blob([receipt.innerText], { type: 'text/plain' });
+   216→    const url = URL.createObjectURL(blob);
+   217→    const a = document.createElement('a');
+   218→    a.href = url;
+   219→    a.download = `e-transaksi-${orderResult?.invoiceNumber || 'receipt'}.txt`;
+   220→    a.click();
+   221→    URL.revokeObjectURL(url);
+   222→  };
+   223→
+   224→  // Generate SVG QR Code
+   225→  const generateQRSVG = () => {
+   226→    // Simulated QR pattern - in production use a real QR library
+   227→    const modules = 21;
+   228→    const cellSize = 8;
+   229→    const size = modules * cellSize;
+   230→    
+   231→    // Create a deterministic pattern based on the QRIS content
+   232→    let rects = '';
+   233→    const seed = qrisContent.length;
+   234→    for (let row = 0; row < modules; row++) {
+   235→      for (let col = 0; col < modules; col++) {
+   236→        // Finder patterns (3 corners)
+   237→        const isTopLeft = row < 7 && col < 7;
+   238→        const isTopRight = row < 7 && col >= modules - 7;
+   239→        const isBottomLeft = row >= modules - 7 && col < 7;
+   240→        
+   241→        if (isTopLeft || isTopRight || isBottomLeft) {
+   242→          const r = isTopLeft ? row : isBottomLeft ? row - (modules - 7) : row;
+   243→          const c = isTopLeft ? col : isTopRight ? col - (modules - 7) : col;
+   244→          const isBorder = r === 0 || r === 6 || c === 0 || c === 6;
+   245→          const isInner = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+   246→          if (isBorder || isInner) {
+   247→            rects += `<rect x="${col * cellSize}" y="${row * cellSize}" width="${cellSize}" height="${cellSize}" fill="#065f46"/>`;
+   248→          }
+   249→        } else if ((row + col + seed) % 3 === 0 || (row * col + seed) % 5 === 0) {
+   250→          rects += `<rect x="${col * cellSize}" y="${row * cellSize}" width="${cellSize}" height="${cellSize}" fill="#065f46"/>`;
+   251→        }
+   252→      }
+   253→    }
+   254→    
+   255→    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
+   256→      <rect width="${size}" height="${size}" fill="white" rx="4"/>
+   257→      ${rects}
+   258→    </svg>`;
+   259→  };
+   260→
+   261→  // Order Success / E-Transaksi View
+   262→  if (orderResult) {
+   263→    const date = new Date(orderResult.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+   264→    const time = new Date(orderResult.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+   265→
+   266→    return (
+   267→      <div className="py-12">
+   268→        <div className="max-w-lg mx-auto px-4">
+   269→          <div className="text-center mb-6">
+   270→            <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg shadow-emerald-200">
+   271→              <CheckCircle2 className="h-8 w-8 text-white" />
+   272→            </div>
+   273→            <h1 className="text-2xl font-bold text-emerald-900">E-Transaksi Berhasil!</h1>
+   274→            <p className="text-gray-500 text-sm mt-1">Transaksi digital Anda telah dicatat</p>
+   275→          </div>
+   276→
+   277→          {/* E-Transaction Receipt */}
+   278→          <div id="receipt-content">
+   279→            <Card className="border-0 shadow-2xl overflow-hidden">
+   280→              {/* Green header */}
+   281→              <div className="bg-gradient-to-r from-emerald-700 to-emerald-800 px-5 py-4 text-white">
+   282→                <div className="flex items-center justify-between">
+   283→                  <div className="flex items-center gap-3">
+   284→                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+   285→                      <Receipt className="h-5 w-5" />
+   286→                    </div>
+   287→                    <div>
+   288→                      <h2 className="font-bold text-base">E-Transaksi Digital</h2>
+   289→                      <p className="text-emerald-200 text-xs">Desa Air Sempiang</p>
+   290→                    </div>
+   291→                  </div>
+   292→                  <Badge className="bg-white/20 text-white border-white/30 text-xs">E-RECEIPT</Badge>
+   293→                </div>
+   294→              </div>
+   295→
+   296→              <CardContent className="p-5 space-y-4 font-mono">
+   297→                {/* Greeting */}
+   298→                <div>
+   299→                  <p className="text-sm text-gray-700">Dear <span className="font-bold">{buyerName}</span>,</p>
+   300→                  <p className="text-sm text-gray-600 mt-1">Terima kasih! Transaksi Anda di <span className="font-bold text-emerald-700">Marketplace Desa Air Sempiang</span> berhasil dicatat.</p>
+   301→                </div>
+   302→
+   303→                <div className="border-t border-dashed border-gray-200" />
+   304→
+   305→                {/* E-Transaction Badge & Info */}
+   306→                <div className="bg-emerald-50 rounded-lg p-3 flex items-center gap-3">
+   307→                  <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center shrink-0">
+   308→                    <Zap className="h-5 w-5 text-emerald-600" />
+   309→                  </div>
+   310→                  <div>
+   311→                    <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider">E-Transaksi Terverifikasi</p>
+   312→                    <p className="text-xs text-emerald-600">Transaksi digital aman & tercatat</p>
+   313→                  </div>
+   314→                </div>
+   315→
+   316→                {/* Invoice Info */}
+   317→                <div className="space-y-2">
+   318→                  <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Detail Transaksi</p>
+   319→                  <div className="flex justify-between text-sm">
+   320→                    <span className="text-gray-500">No. Invoice</span>
+   321→                    <span className="font-bold text-gray-900">{orderResult.invoiceNumber}</span>
+   322→                  </div>
+   323→                  <div className="flex justify-between text-sm">
+   324→                    <span className="text-gray-500">Tanggal</span>
+   325→                    <span className="text-gray-700">{date}, {time} WIB</span>
+   326→                  </div>
+   327→                  <div className="flex justify-between text-sm">
+   328→                    <span className="text-gray-500">Pembeli</span>
+   329→                    <span className="text-gray-700">{buyerName}</span>
+   330→                  </div>
+   331→                  <div className="flex justify-between text-sm">
+   332→                    <span className="text-gray-500">Telepon</span>
+   333→                    <span className="text-gray-700">{buyerPhone}</span>
+   334→                  </div>
+   335→                </div>
+   336→
+   337→                <div className="border-t border-dashed border-gray-200" />
+   338→
+   339→                {/* Items */}
+   340→                <div className="space-y-2">
+   341→                  <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Item Pesanan</p>
+   342→                  {pendingOrder.items.map((item, i) => (
+   343→                    <div key={i} className="flex justify-between text-sm">
+   344→                      <span className="text-gray-700">{item.name} x{item.quantity}</span>
+   345→                      <span className="font-medium text-gray-900">{formatPrice(item.price * item.quantity)}</span>
+   346→                    </div>
+   347→                  ))}
+   348→                </div>
+   349→
+   350→                <div className="border-t border-dashed border-gray-200" />
+   351→
+   352→                {/* Total */}
+   353→                <div className="flex justify-between items-center bg-emerald-50 rounded-lg p-3">
+   354→                  <span className="font-bold text-emerald-800 text-sm">Total Pembayaran</span>
+   355→                  <span className="font-bold text-emerald-800 text-lg">{formatPrice(pendingOrder.total)}</span>
+   356→                </div>
+   357→
+   358→                <div className="border-t border-dashed border-gray-200" />
+   359→
+   360→                {/* Payment Method */}
+   361→                <div className="space-y-2">
+   362→                  <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Metode Pembayaran</p>
+   363→                  <div className="flex justify-between items-center text-sm">
+   364→                    <span className="text-gray-500">Metode</span>
+   365→                    <span className="font-bold text-gray-900 flex items-center gap-1">
+   366→                      {selectedPayment?.icon} {selectedPayment?.label}
+   367→                    </span>
+   368→                  </div>
+   369→                  <p className="text-xs text-gray-500 bg-gray-50 p-2 rounded">{selectedPayment?.detail}</p>
+   370→                </div>
+   371→
+   372→                {/* QRIS Section in Receipt */}
+   373→                {isQRIS && (
+   374→                  <>
+   375→                    <div className="border-t border-dashed border-gray-200" />
+   376→                    <div className="bg-white border-2 border-emerald-200 rounded-xl p-4 text-center">
+   377→                      <p className="text-xs font-bold text-emerald-700 mb-3">SCAN QRIS UNTUK BAYAR</p>
+   378→                      <div className="w-44 h-44 mx-auto bg-white p-2 rounded-lg border border-gray-100 shadow-inner flex items-center justify-center"
+   379→                        dangerouslySetInnerHTML={{ __html: generateQRSVG() }}
+   380→                      />
+   381→                      <p className="text-[10px] text-gray-400 mt-2">Scan dengan e-wallet atau mobile banking</p>
+   382→                      <p className="text-sm font-bold text-emerald-800 mt-1">{formatPrice(pendingOrder.total)}</p>
+   383→                    </div>
+   384→                  </>
+   385→                )}
+   386→
+   387→                <div className="border-t border-dashed border-gray-200" />
+   388→
+   389→                {/* Status */}
+   390→                <div className="flex justify-between items-center">
+   391→                  <span className="text-sm text-gray-500">Status</span>
+   392→                  <Badge className={isQRIS ? 'bg-blue-100 text-blue-800 font-bold' : 'bg-amber-100 text-amber-800 font-bold'}>
+   393→                    {isQRIS ? 'MENUNGGU SCAN QR' : 'MENUNGGU PEMBAYARAN'}
+   394→                  </Badge>
+   395→                </div>
+   396→
+   397→                {/* Instruction */}
+   398→                <div className={`rounded-lg p-3 ${isQRIS ? 'bg-blue-50 border border-blue-200' : 'bg-amber-50 border border-amber-200'}`}>
+   399→                  <p className={`text-xs font-medium mb-1 flex items-center gap-1 ${isQRIS ? 'text-blue-800' : 'text-amber-800'}`}>
+   400→                    <AlertCircle className="h-3 w-3" /> Instruksi Pembayaran:
+   401→                  </p>
+   402→                  {isQRIS ? (
+   403→                    <div className="text-xs text-blue-700 space-y-1">
+   404→                      <p>1. Buka e-wallet atau mobile banking Anda</p>
+   405→                      <p>2. Pilih menu "Scan QR" / "QRIS"</p>
+   406→                      <p>3. Scan QR code di atas</p>
+   407→                      <p>4. Konfirmasi pembayaran sebesar <span className="font-bold">{formatPrice(pendingOrder.total)}</span></p>
+   408→                      <p>5. Kirim bukti ke WhatsApp desa</p>
+   409→                    </div>
+   410→                  ) : (
+   411→                    <p className="text-xs text-amber-700">Mohon lakukan pembayaran sesuai metode di atas, lalu kirim bukti pembayaran ke WhatsApp desa di nomor <span className="font-bold">085150859735</span>.</p>
+   412→                  )}
+   413→                </div>
+   414→
+   415→                <div className="border-t border-dashed border-gray-200" />
+   416→
+   417→                {/* Closing */}
+   418→                <div className="text-center text-xs text-gray-400">
+   419→                  <p className="flex items-center justify-center gap-1"><ShieldCheck className="h-3 w-3" /> E-Transaksi Aman & Terverifikasi</p>
+   420→                  <p className="font-bold text-emerald-700 mt-1">Marketplace Desa Air Sempiang</p>
+   421→                  <p>Kec. Kabawetan, Kab. Kepahiang, Bengkulu</p>
+   422→                </div>
+   423→              </CardContent>
+   424→            </Card>
+   425→          </div>
+   426→
+   427→          {/* Action Buttons */}
+   428→          <div className="flex flex-col gap-3 mt-6">
+   429→            {/* Primary: Send to WhatsApp */}
+   430→            <Button
+   431→              className="w-full bg-green-600 hover:bg-green-500 py-5 text-base"
+   432→              onClick={handleSendWhatsApp}
+   433→            >
+   434→              <MessageCircle className="mr-2 h-5 w-5" />
+   435→              Kirim E-Transaksi ke WhatsApp
+   436→            </Button>
+   437→
+   438→            <div className="grid grid-cols-2 gap-3">
+   439→              {/* Download receipt */}
+   440→              <Button
+   441→                variant="outline"
+   442→                className="py-4 border-emerald-200 text-emerald-700"
+   443→                onClick={handleDownloadReceipt}
+   444→              >
+   445→                <Download className="mr-2 h-4 w-4" /> Unduh
+   446→              </Button>
+   447→              {/* Print receipt */}
+   448→              <Button
+   449→                variant="outline"
+   450→                className="py-4 border-emerald-200 text-emerald-700"
+   451→                onClick={handlePrint}
+   452→              >
+   453→                <Printer className="mr-2 h-4 w-4" /> Cetak
+   454→              </Button>
+   455→            </div>
+   456→
+   457→            {/* Secondary actions */}
+   458→            <Button
+   459→              className="w-full bg-emerald-600 hover:bg-emerald-700 py-4"
+   460→              onClick={() => router.push('/order-history')}
+   461→            >
+   462→              <Package className="mr-2 h-4 w-4" /> Lihat Riwayat Transaksi
+   463→            </Button>
+   464→            <Button
+   465→              variant="ghost"
+   466→              className="w-full py-3 text-gray-500"
+   467→              onClick={() => router.push('/')}
+   468→            >
+   469→              Kembali ke Beranda
+   470→            </Button>
+   471→          </div>
+   472→        </div>
+   473→      </div>
+   474→    );
+   475→  }
+   476→
+   477→  // Payment Form View
+   478→  return (
+   479→    <div className="py-12">
+   480→      <div className="max-w-2xl mx-auto px-4">
+   481→        <button
+   482→          onClick={() => router.push('/marketplace')}
+   483→          className="flex items-center gap-2 text-emerald-600 hover:text-emerald-800 mb-6 text-sm font-medium"
+   484→        >
+   485→          <ArrowLeft className="h-4 w-4" /> Kembali ke Marketplace
+   486→        </button>
+   487→
+   488→        <div className="flex items-center gap-3 mb-6">
+   489→          <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+   490→            <CreditCard className="h-5 w-5 text-emerald-600" />
+   491→          </div>
+   492→          <div>
+   493→            <h1 className="text-2xl font-bold text-emerald-900">Pembayaran E-Transaksi</h1>
+   494→            <p className="text-sm text-gray-500">Transaksi digital aman & terverifikasi</p>
+   495→          </div>
+   496→        </div>
+   497→
+   498→        {/* Order Summary */}
+   499→        <Card className="border-emerald-200 mb-6">
+   500→          <CardHeader>
+   501→            <CardTitle className="text-emerald-800 text-lg">Ringkasan Pesanan</CardTitle>
+   502→          </CardHeader>
+   503→          <CardContent>
+   504→            <div className="space-y-3">
+   505→              {pendingOrder.items.map((item, i) => (
+   506→                <div key={i} className="flex items-center gap-3">
+   507→                  <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+   508→                    <Package className="h-5 w-5 text-emerald-600" />
+   509→                  </div>
+   510→                  <div className="flex-1">
+   511→                    <p className="text-sm font-medium">{item.name}</p>
+   512→                    <p className="text-xs text-gray-500">{item.quantity} x {formatPrice(item.price)}</p>
+   513→                  </div>
+   514→                  <p className="font-medium text-sm">{formatPrice(item.price * item.quantity)}</p>
+   515→                </div>
+   516→              ))}
+   517→              <Separator />
+   518→              <div className="flex justify-between font-bold text-emerald-800 text-lg">
+   519→                <span>Total</span>
+   520→                <span>{formatPrice(pendingOrder.total)}</span>
+   521→              </div>
+   522→            </div>
+   523→          </CardContent>
+   524→        </Card>
+   525→
+   526→        {/* Payment Method */}
+   527→        <Card className="border-emerald-200 mb-6">
+   528→          <CardHeader>
+   529→            <CardTitle className="text-emerald-800 text-lg">Metode Pembayaran</CardTitle>
+   530→          </CardHeader>
+   531→          <CardContent>
+   532→            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+   533→              {paymentOptions.map((opt) => (
+   534→                <button
+   535→                  key={opt.value}
+   536→                  onClick={() => { setPaymentMethod(opt.value); setShowQRIS(false); }}
+   537→                  className={`relative p-3 rounded-xl border-2 text-center transition-all ${
+   538→                    paymentMethod === opt.value
+   539→                      ? 'border-emerald-500 bg-emerald-50 shadow-sm'
+   540→                      : 'border-gray-200 hover:border-emerald-300'
+   541→                  }`}
+   542→                >
+   543→                  {opt.badge && (
+   544→                    <span className={`absolute -top-2 left-1/2 -translate-x-1/2 text-[9px] px-2 py-0.5 rounded-full font-bold ${opt.badgeColor}`}>
+   545→                      {opt.badge}
+   546→                    </span>
+   547→                  )}
+   548→                  <div className={`mx-auto mb-1 ${paymentMethod === opt.value ? 'text-emerald-600' : 'text-gray-400'}`}>
+   549→                    {opt.icon}
+   550→                  </div>
+   551→                  <p className={`text-xs font-medium ${paymentMethod === opt.value ? 'text-emerald-800' : 'text-gray-600'}`}>
+   552→                    {opt.label}
+   553→                  </p>
+   554→                </button>
+   555→              ))}
+   556→            </div>
+   557→            
+   558→            {/* QRIS Preview */}
+   559→            {isQRIS && (
+   560→              <div className="mt-4 border-2 border-emerald-200 rounded-xl p-4 bg-gradient-to-b from-emerald-50 to-white">
+   561→                <div className="flex items-center gap-2 mb-3">
+   562→                  <QrCode className="h-5 w-5 text-emerald-600" />
+   563→                  <p className="font-bold text-emerald-800 text-sm">Pembayaran QRIS</p>
+   564→                  <Badge className="bg-emerald-100 text-emerald-700 text-[9px] ml-auto">Scan & Bayar</Badge>
+   565→                </div>
+   566→                <div className="w-40 h-40 mx-auto bg-white p-2 rounded-lg border border-gray-100 shadow-inner flex items-center justify-center mb-3"
+   567→                  dangerouslySetInnerHTML={{ __html: generateQRSVG() }}
+   568→                />
+   569→                <div className="text-center">
+   570→                  <p className="text-xs text-gray-500 mb-1">Scan dengan e-wallet atau mobile banking</p>
+   571→                  <p className="text-lg font-bold text-emerald-800">{formatPrice(pendingOrder.total)}</p>
+   572→                  <div className="flex items-center justify-center gap-2 mt-2">
+   573→                    <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded">GoPay</span>
+   574→                    <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded">OVO</span>
+   575→                    <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded">DANA</span>
+   576→                    <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded">ShopeePay</span>
+   577→                    <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded">m-Banking</span>
+   578→                  </div>
+   579→                </div>
+   580→                <div className="mt-3 flex items-center gap-2">
+   581→                  <button
+   582→                    onClick={handleCopyQRIS}
+   583→                    className="flex-1 flex items-center justify-center gap-1 text-xs text-emerald-700 bg-emerald-100 hover:bg-emerald-200 py-2 rounded-lg transition-colors"
+   584→                  >
+   585→                    {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+   586→                    {copied ? 'Tersalin!' : 'Salin Kode QRIS'}
+   587→                  </button>
+   588→                </div>
+   589→              </div>
+   590→            )}
+   591→
+   592→            {selectedPayment && !isQRIS && (
+   593→              <div className="mt-4 p-3 bg-emerald-50 rounded-lg text-sm text-emerald-700">
+   594→                {selectedPayment.detail}
+   595→              </div>
+   596→            )}
+   597→          </CardContent>
+   598→        </Card>
+   599→
+   600→        {/* Buyer Info */}
+   601→        <Card className="border-emerald-200 mb-6">
+   602→          <CardHeader>
+   603→            <CardTitle className="text-emerald-800 text-lg">Informasi Pembeli</CardTitle>
+   604→          </CardHeader>
+   605→          <CardContent className="space-y-4">
+   606→            <div className="space-y-2">
+   607→              <Label htmlFor="buyerName">Nama Pembeli *</Label>
+   608→              <Input
+   609→                id="buyerName"
+   610→                value={buyerName}
+   611→                onChange={(e) => setBuyerName(e.target.value)}
+   612→                placeholder="Nama lengkap pembeli"
+   613→                required
+   614→              />
+   615→            </div>
+   616→            <div className="space-y-2">
+   617→              <Label htmlFor="buyerPhone">Nomor WhatsApp Pembeli *</Label>
+   618→              <Input
+   619→                id="buyerPhone"
+   620→                value={buyerPhone}
+   621→                onChange={(e) => setBuyerPhone(e.target.value)}
+   622→                placeholder="08xxxxxxxxxx"
+   623→                required
+   624→              />
+   625→              <p className="text-xs text-gray-400 flex items-center gap-1">
+   626→                <MessageCircle className="h-3 w-3" /> E-transaksi & bukti pembayaran akan dikirim ke WhatsApp ini
+   627→              </p>
+   628→            </div>
+   629→            {isBank && (
+   630→              <>
+   631→                <div className="space-y-2">
+   632→                  <Label htmlFor="bankAccount">Nomor Rekening Pengirim</Label>
+   633→                  <Input
+   634→                    id="bankAccount"
+   635→                    value={bankAccount}
+   636→                    onChange={(e) => setBankAccount(e.target.value)}
+   637→                    placeholder="Nomor rekening yang digunakan untuk transfer"
+   638→                  />
+   639→                </div>
+   640→                <div className="space-y-2">
+   641→                  <Label htmlFor="bankName">Nama Rekening Pengirim</Label>
+   642→                  <Input
+   643→                    id="bankName"
+   644→                    value={bankName}
+   645→                    onChange={(e) => setBankName(e.target.value)}
+   646→                    placeholder="Nama sesuai rekening"
+   647→                  />
+   648→                </div>
+   649→              </>
+   650→            )}
+   651→          </CardContent>
+   652→        </Card>
+   653→
+   654→        {/* Security badge */}
+   655→        <div className="flex items-center justify-center gap-2 mb-4 text-xs text-gray-400">
+   656→          <ShieldCheck className="h-4 w-4" />
+   657→          <span>Transaksi aman & terenkripsi</span>
+   658→        </div>
+   659→
+   660→        {error && (
+   661→          <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg text-sm mb-4">
+   662→            {error}
+   663→          </div>
+   664→        )}
+   665→
+   666→        <Button
+   667→          onClick={handlePayment}
+   668→          className="w-full bg-emerald-600 hover:bg-emerald-700 py-6 text-lg"
+   669→          disabled={loading}
+   670→        >
+   671→          <CreditCard className="mr-2 h-5 w-5" />
+   672→          {loading ? 'Memproses E-Transaksi...' : `Bayar ${formatPrice(pendingOrder.total)}`}
+   673→        </Button>
+   674→      </div>
+   675→    </div>
+   676→  );
+   677→}
+   678→

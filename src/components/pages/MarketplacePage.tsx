@@ -8,7 +8,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { ShoppingCart, Plus, Minus, Trash2, ShoppingBag, Package, Store, Search } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, ShoppingBag, Package, Store, Search, Clock, CheckCircle2, MessageCircle, QrCode, CreditCard } from 'lucide-react';
+import ETransaksiModal from '@/components/chat/ETransaksiModal';
 
 interface Product {
   id: string;
@@ -21,6 +22,42 @@ interface Product {
   seller: string;
 }
 
+interface OrderItem {
+  id: string;
+  productId: string;
+  quantity: number;
+  price: number;
+  product: { name: string };
+}
+
+interface Order {
+  id: string;
+  invoiceNumber: string;
+  totalAmount: number;
+  status: string;
+  paymentMethod: string;
+  buyerName: string;
+  buyerPhone: string;
+  createdAt: string;
+  items: OrderItem[];
+}
+
+const statusLabels: Record<string, string> = {
+  'PENDING': 'Menunggu Pembayaran',
+  'PAID': 'Dibayar',
+  'PROCESSING': 'Sedang Diproses',
+  'DELIVERED': 'Terkirim',
+  'CANCELLED': 'Dibatalkan',
+};
+
+const statusColors: Record<string, string> = {
+  'PENDING': 'bg-amber-100 text-amber-800',
+  'PAID': 'bg-blue-100 text-blue-800',
+  'PROCESSING': 'bg-purple-100 text-purple-800',
+  'DELIVERED': 'bg-green-100 text-green-800',
+  'CANCELLED': 'bg-red-100 text-red-800',
+};
+
 export default function MarketplacePage() {
   const router = useRouter();
   const { user, cart, addToCart, removeFromCart, updateCartQuantity, clearCart, setPendingOrder, cartTotal } = useAppStore();
@@ -28,18 +65,29 @@ export default function MarketplacePage() {
   const [loading, setLoading] = useState(true);
   const [showCart, setShowCart] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [eTransaksiOpen, setETransaksiOpen] = useState(false);
+  const [recentOrders, setRecentOrders] = useState<Order[]>([]);
+  const [showOrders, setShowOrders] = useState(false);
 
   useEffect(() => {
     fetch('/api/products')
       .then((r) => r.json())
       .then((data) => {
-        // Only show UMKM products
         const umkmProducts = data.filter((p: Product) => p.category === 'UMKM');
         setProducts(umkmProducts);
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
+
+  // Fetch recent orders when user is logged in
+  useEffect(() => {
+    if (!user) return;
+    fetch(`/api/orders?userId=${user.id}`)
+      .then((r) => r.json())
+      .then((d) => setRecentOrders(d.slice(0, 5)))
+      .catch(() => {});
+  }, [user]);
 
   const filtered = products.filter((p) => {
     const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -63,10 +111,42 @@ export default function MarketplacePage() {
   const handleCheckout = () => {
     if (cart.length === 0) return;
     setPendingOrder({ items: [...cart], total: cartTotal() });
-    router.push('/payment');
+    setETransaksiOpen(true);
   };
 
   const formatPrice = (price: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
+
+  const handleSendETransaksiWA = (order: Order) => {
+    const items = order.items.map((item) => `• ${item.product?.name || 'Produk'} x${item.quantity} = ${formatPrice(item.price * item.quantity)}`).join('\n');
+    const date = new Date(order.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    const time = new Date(order.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    const invoice = order.invoiceNumber || order.id.substring(0, 12).toUpperCase();
+
+    const message = `🧾 *E-TRANSAKSI DIGITAL*
+*Desa Air Sempiang Digital*
+━━━━━━━━━━━━━━━━━━
+
+📋 *Detail E-Transaksi:*
+No. Invoice: *${invoice}*
+Tanggal: ${date}, ${time} WIB
+Pembeli: ${order.buyerName}
+
+📦 *Item Pesanan:*
+${items}
+
+━━━━━━━━━━━━━━━━━━
+💰 *Total: ${formatPrice(order.totalAmount)}*
+
+💳 *Metode: ${order.paymentMethod}*
+📌 *Status: ${statusLabels[order.status] || order.status}*
+
+${order.status === 'PENDING' ? 'Mohon lakukan pembayaran dan kirim bukti ke nomor ini.' : 'Terima kasih atas pembayaran Anda!'}
+
+*E-Transaksi Desa Air Sempiang*
+Kec. Kabawetan, Kab. Kepahiang`;
+
+    window.open(`https://wa.me/6285150859735?text=${encodeURIComponent(message)}`, '_blank');
+  };
 
   return (
     <div className="py-12">
@@ -97,7 +177,7 @@ export default function MarketplacePage() {
           ))}
         </div>
 
-        {/* Search and Cart */}
+        {/* Search, Cart & E-Transaksi */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -108,19 +188,95 @@ export default function MarketplacePage() {
               className="pl-9"
             />
           </div>
-          {user && cart.length > 0 && (
-            <Button
-              onClick={() => setShowCart(!showCart)}
-              className="bg-emerald-600 hover:bg-emerald-700 ml-auto relative"
-            >
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Keranjang ({cart.length})
-              <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-red-500">
-                {cart.reduce((s, i) => s + i.quantity, 0)}
-              </Badge>
-            </Button>
-          )}
+          <div className="flex gap-2 ml-auto">
+            {user && recentOrders.length > 0 && (
+              <Button
+                onClick={() => setShowOrders(!showOrders)}
+                variant="outline"
+                className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+              >
+                <CreditCard className="h-4 w-4 mr-2" />
+                E-Transaksi
+                {recentOrders.filter(o => o.status === 'PENDING').length > 0 && (
+                  <Badge className="ml-2 h-5 w-5 p-0 flex items-center justify-center bg-amber-500 text-white text-[10px]">
+                    {recentOrders.filter(o => o.status === 'PENDING').length}
+                  </Badge>
+                )}
+              </Button>
+            )}
+            {user && cart.length > 0 && (
+              <Button
+                onClick={() => setShowCart(!showCart)}
+                className="bg-emerald-600 hover:bg-emerald-700 relative"
+              >
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                Keranjang ({cart.length})
+                <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-red-500">
+                  {cart.reduce((s, i) => s + i.quantity, 0)}
+                </Badge>
+              </Button>
+            )}
+          </div>
         </div>
+
+        {/* Recent E-Transaksi Panel */}
+        {showOrders && user && recentOrders.length > 0 && (
+          <Card className="mb-8 border-emerald-200 shadow-lg">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-emerald-900 flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" /> E-Transaksi Terbaru
+                </h3>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => router.push('/order-history')}
+                    className="text-emerald-600 text-xs"
+                  >
+                    Lihat Semua
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setShowOrders(false)}>Tutup</Button>
+                </div>
+              </div>
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {recentOrders.map((order) => {
+                  const invoice = order.invoiceNumber || order.id.substring(0, 12).toUpperCase();
+                  return (
+                    <div key={order.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                        order.status === 'DELIVERED' ? 'bg-green-100' :
+                        order.status === 'PENDING' ? 'bg-amber-100' : 'bg-emerald-100'
+                      }`}>
+                        {order.paymentMethod === 'QRIS' ? <QrCode className="h-4 w-4 text-emerald-600" /> : <Package className="h-4 w-4 text-emerald-600" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm truncate">#{invoice}</p>
+                          <Badge className={`${statusColors[order.status] || 'bg-gray-100'} text-[10px]`}>
+                            {statusLabels[order.status] || order.status}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          {order.items.length} item • {new Date(order.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="font-bold text-sm text-emerald-800">{formatPrice(order.totalAmount)}</p>
+                        <button
+                          onClick={() => handleSendETransaksiWA(order)}
+                          className="text-[10px] text-green-600 hover:text-green-800 flex items-center gap-0.5 ml-auto"
+                        >
+                          <MessageCircle className="h-3 w-3" /> WA
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Cart Panel */}
         {showCart && user && (
@@ -188,6 +344,7 @@ export default function MarketplacePage() {
                     <div className="flex gap-2">
                       <Button variant="outline" onClick={clearCart}>Kosongkan</Button>
                       <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={handleCheckout}>
+                        <CreditCard className="h-4 w-4 mr-2" />
                         Checkout
                       </Button>
                     </div>
@@ -295,6 +452,12 @@ export default function MarketplacePage() {
           </Card>
         )}
       </div>
+
+      {/* E-Transaksi Modal - appears on checkout */}
+      <ETransaksiModal
+        open={eTransaksiOpen}
+        onClose={() => setETransaksiOpen(false)}
+      />
     </div>
   );
 }
