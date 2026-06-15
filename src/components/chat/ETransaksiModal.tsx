@@ -65,6 +65,23 @@ interface TransactionResult {
   createdAt: string;
 }
 
+// Normalize API response to camelCase (handles both Prisma camelCase and Supabase snake_case)
+function normalizeTransaction(data: Record<string, unknown>): TransactionResult {
+  return {
+    id: (data.id || data._id) as string,
+    invoiceNumber: (data.invoiceNumber || data.invoice_number) as string,
+    buyerName: (data.buyerName || data.buyer_name) as string,
+    buyerPhone: (data.buyerPhone || data.buyer_phone) as string,
+    items: (data.items || []) as TransactionItem[],
+    totalAmount: Number(data.totalAmount || data.total_amount || 0),
+    paymentMethod: (data.paymentMethod || data.payment_method) as string,
+    paymentStatus: (data.paymentStatus || data.payment_status) as string,
+    transactionStatus: (data.transactionStatus || data.transaction_status) as string,
+    qrisContent: (data.qrisContent || data.qris_content) as string | undefined,
+    createdAt: (data.createdAt || data.created_at) as string,
+  };
+}
+
 const WA_NUMBER = '6285150859735';
 
 const statusLabels: Record<string, string> = {
@@ -158,7 +175,7 @@ export default function ETransaksiModal({ open, onClose }: ETransaksiModalProps)
         return;
       }
 
-      setTransactionResult(data);
+      setTransactionResult(normalizeTransaction(data));
       clearCart();
       setStep('success');
     } catch {

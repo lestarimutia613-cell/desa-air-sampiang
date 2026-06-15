@@ -16,6 +16,7 @@ import {
   X,
   Package,
   ClipboardList,
+  Zap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -28,6 +29,7 @@ interface AdminUser {
 
 const sidebarItems = [
   { label: 'Dashboard', href: '/admin', icon: <LayoutDashboard className="h-5 w-5" /> },
+  { label: 'E-Transaksi', href: '/admin/e-transaksi', icon: <Zap className="h-5 w-5" /> },
   { label: 'Pesanan', href: '/admin/orders', icon: <Package className="h-5 w-5" /> },
   { label: 'Produk', href: '/admin/products', icon: <ShoppingBag className="h-5 w-5" /> },
   { label: 'Layanan', href: '/admin/services', icon: <FileText className="h-5 w-5" /> },

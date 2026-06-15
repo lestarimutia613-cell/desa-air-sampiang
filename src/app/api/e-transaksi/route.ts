@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { isSupabaseConfigured, supabaseAdmin } from '@/lib/supabase';
 
 function generateInvoiceNumber(): string {
   const now = new Date();
@@ -23,6 +24,46 @@ export async function GET(request: NextRequest) {
     const id = searchParams.get('id');
     const status = searchParams.get('status');
 
+    if (isSupabaseConfigured) {
+      if (id) {
+        const { data, error } = await supabaseAdmin
+          .from('e_transactions')
+          .select('*')
+          .eq('id', id)
+          .single();
+        if (error || !data) return NextResponse.json({ error: 'Transaksi tidak ditemukan' }, { status: 404 });
+        return NextResponse.json({ ...data, items: typeof data.items === 'string' ? JSON.parse(data.items) : data.items });
+      }
+
+      let query = supabaseAdmin
+        .from('e_transactions')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (userId) query = query.eq('user_id', userId);
+      if (status) query = query.eq('transaction_status', status);
+
+      const { data: transactions, error } = await query;
+      if (error) return NextResponse.json({ error: 'Gagal memuat e-transaksi' }, { status: 500 });
+
+      const parsed = (transactions || []).map((t: any) => ({
+        ...t,
+        items: typeof t.items === 'string' ? JSON.parse(t.items) : t.items,
+      }));
+
+      const stats = {
+        total: parsed.length,
+        pending: parsed.filter((t: any) => t.transaction_status === 'PENDING').length,
+        paid: parsed.filter((t: any) => t.transaction_status === 'PAID').length,
+        completed: parsed.filter((t: any) => t.transaction_status === 'COMPLETED').length,
+        cancelled: parsed.filter((t: any) => t.transaction_status === 'CANCELLED').length,
+        totalRevenue: parsed.filter((t: any) => t.transaction_status === 'COMPLETED').reduce((s: number, t: any) => s + (t.total_amount || 0), 0),
+      };
+
+      return NextResponse.json({ transactions: parsed, stats });
+    }
+
+    // Prisma fallback
     if (id) {
       const transaction = await db.eTransaction.findUnique({ where: { id } });
       if (!transaction) return NextResponse.json({ error: 'Transaksi tidak ditemukan' }, { status: 404 });
@@ -81,7 +122,102 @@ export async function POST(request: NextRequest) {
       subtotal: item.price * item.quantity,
     })));
 
-    // Create order first if userId exists
+    if (isSupabaseConfigured) {
+      // Create order first if userId exists
+      let orderId: string | null = null;
+      if (userId) {
+        const { data: order, error: orderError } = await supabaseAdmin
+          .from('orders')
+          .insert({
+            invoice_number: `INV-${invoiceNumber.split('-').slice(1).join('-')}`,
+            user_id: userId,
+            total_amount: totalAmount,
+            status: 'PENDING',
+            payment_method: paymentMethod || 'QRIS',
+            buyer_phone: buyerPhone,
+            buyer_name: buyerName,
+          })
+          .select()
+          .single();
+
+        if (!orderError && order) {
+          orderId = order.id;
+
+          // Create order items
+          const orderItems = items
+            .filter((item: { productId: string }) => item.productId)
+            .map((item: { productId: string; quantity: number; price: number }) => ({
+              order_id: order.id,
+              product_id: item.productId,
+              quantity: item.quantity,
+              price: item.price,
+            }));
+
+          if (orderItems.length > 0) {
+            await supabaseAdmin.from('order_items').insert(orderItems);
+          }
+
+          // Create payment proof
+          await supabaseAdmin.from('payment_proofs').insert({
+            order_id: order.id,
+            invoice_number: `INV-${invoiceNumber.split('-').slice(1).join('-')}`,
+            buyer_name: buyerName,
+            buyer_phone: buyerPhone,
+            total_amount: totalAmount,
+            payment_method: paymentMethod || 'QRIS',
+            items: itemsJson,
+            status: 'PENDING',
+          });
+
+          // Update stock
+          for (const item of items.filter((i: { productId: string }) => i.productId)) {
+            const { data: product } = await supabaseAdmin
+              .from('products')
+              .select('stock')
+              .eq('id', item.productId)
+              .single();
+            if (product) {
+              await supabaseAdmin
+                .from('products')
+                .update({ stock: Math.max(0, product.stock - item.quantity) })
+                .eq('id', item.productId);
+            }
+          }
+        }
+      }
+
+      // Create e-transaction
+      const { data: transaction, error: txError } = await supabaseAdmin
+        .from('e_transactions')
+        .insert({
+          invoice_number: invoiceNumber,
+          order_id: orderId,
+          user_id: userId || null,
+          buyer_name: buyerName,
+          buyer_phone: buyerPhone,
+          buyer_email: buyerEmail || null,
+          items: itemsJson,
+          total_amount: totalAmount,
+          payment_method: paymentMethod || 'QRIS',
+          payment_status: 'PENDING',
+          transaction_status: 'PENDING',
+          qris_content: qrisContent,
+        })
+        .select()
+        .single();
+
+      if (txError) {
+        console.error('Supabase e-transaction create error:', txError);
+        return NextResponse.json({ error: 'Gagal membuat e-transaksi' }, { status: 500 });
+      }
+
+      return NextResponse.json({
+        ...transaction,
+        items: typeof transaction.items === 'string' ? JSON.parse(transaction.items) : transaction.items,
+      });
+    }
+
+    // Prisma fallback
     let orderId: string | null = null;
     if (userId) {
       const order = await db.order.create({
@@ -162,6 +298,54 @@ export async function PUT(request: NextRequest) {
 
     if (!id) return NextResponse.json({ error: 'ID diperlukan' }, { status: 400 });
 
+    if (isSupabaseConfigured) {
+      const updateData: Record<string, unknown> = {};
+      if (transactionStatus) {
+        updateData.transaction_status = transactionStatus;
+        if (transactionStatus === 'PAID') updateData.paid_at = new Date().toISOString();
+        if (transactionStatus === 'COMPLETED') updateData.completed_at = new Date().toISOString();
+        if (transactionStatus === 'CANCELLED') updateData.cancelled_at = new Date().toISOString();
+      }
+      if (paymentStatus) updateData.payment_status = paymentStatus;
+      if (notes !== undefined) updateData.notes = notes;
+      if (whSent) {
+        // Fetch current to increment
+        const { data: current } = await supabaseAdmin
+          .from('e_transactions')
+          .select('wh_sent_count')
+          .eq('id', id)
+          .single();
+        updateData.wh_sent_count = (current?.wh_sent_count || 0) + 1;
+        updateData.wh_last_sent_at = new Date().toISOString();
+      }
+
+      const { data: transaction, error } = await supabaseAdmin
+        .from('e_transactions')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Supabase e-transaction update error:', error);
+        return NextResponse.json({ error: 'Gagal mengupdate e-transaksi' }, { status: 500 });
+      }
+
+      // Also update linked order
+      if (transactionStatus && transaction?.order_id) {
+        await supabaseAdmin
+          .from('orders')
+          .update({ status: transactionStatus })
+          .eq('id', transaction.order_id);
+      }
+
+      return NextResponse.json({
+        ...transaction,
+        items: typeof transaction.items === 'string' ? JSON.parse(transaction.items) : transaction.items,
+      });
+    }
+
+    // Prisma fallback
     const updateData: Record<string, unknown> = {};
     if (transactionStatus) {
       updateData.transactionStatus = transactionStatus;

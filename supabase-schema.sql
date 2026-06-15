@@ -200,6 +200,33 @@ CREATE TABLE IF NOT EXISTS service_applications (
 );
 
 -- ============================================
+-- E-TRANSACTIONS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS e_transactions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  invoice_number VARCHAR(50) UNIQUE NOT NULL,
+  order_id UUID REFERENCES orders(id),
+  user_id UUID REFERENCES users(id),
+  buyer_name VARCHAR(255) NOT NULL,
+  buyer_phone VARCHAR(50) NOT NULL,
+  buyer_email VARCHAR(255),
+  items JSONB NOT NULL DEFAULT '[]',
+  total_amount DECIMAL(12,2) DEFAULT 0,
+  payment_method VARCHAR(100) DEFAULT 'QRIS',
+  payment_status VARCHAR(50) DEFAULT 'PENDING',
+  transaction_status VARCHAR(50) DEFAULT 'PENDING',
+  qris_content TEXT,
+  wh_sent_count INT DEFAULT 0,
+  wh_last_sent_at TIMESTAMPTZ,
+  notes TEXT,
+  paid_at TIMESTAMPTZ,
+  completed_at TIMESTAMPTZ,
+  cancelled_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ============================================
 -- SETTINGS TABLE (Key-Value)
 -- ============================================
 CREATE TABLE IF NOT EXISTS settings (
@@ -228,6 +255,9 @@ CREATE INDEX IF NOT EXISTS idx_courses_sort_order ON courses(sort_order);
 CREATE INDEX IF NOT EXISTS idx_literacy_materials_category ON literacy_materials(category);
 CREATE INDEX IF NOT EXISTS idx_literacy_materials_sort_order ON literacy_materials(sort_order);
 CREATE INDEX IF NOT EXISTS idx_settings_key ON settings(key);
+CREATE INDEX IF NOT EXISTS idx_e_transactions_user_id ON e_transactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_e_transactions_status ON e_transactions(transaction_status);
+CREATE INDEX IF NOT EXISTS idx_e_transactions_invoice ON e_transactions(invoice_number);
 
 -- ============================================
 -- UPDATED_AT TRIGGER FUNCTION

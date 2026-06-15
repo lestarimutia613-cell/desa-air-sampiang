@@ -86,3 +86,27 @@ Stage Summary:
 - BerandaPage now has section IDs for scroll targets
 - MarketplacePage has category filters, product highlighting, and URL-based scroll-to
 - All changes compile and build successfully
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Fix transaction errors, connect Supabase, and set up admin subdomain
+
+Work Log:
+- Seeded SQLite database with admin user (admindesa/admin123) and products
+- Added e_transactions table to supabase-schema.sql with proper indexes
+- Added NEXT_PUBLIC_SUPABASE_URL to .env (https://yugkpgiugudkzwadtmfq.supabase.co)
+- Completely rewrote /api/e-transaksi route with full Supabase support (GET, POST, PUT)
+- Added normalizeTransaction() function to ETransaksiModal to handle both camelCase (Prisma) and snake_case (Supabase) responses
+- Created /admin/e-transaksi/page.tsx - full admin management page for e-transactions with stats, filters, status updates, detail view
+- Added E-Transaksi menu item to admin sidebar layout
+- Redesigned admin login page with dark glassmorphism theme, gradient header, back-to-website button
+- Verified middleware already handles admin- subdomain routing (admin-xxx.space-z.ai → /admin)
+- Build compiles successfully with all 41 pages
+
+Stage Summary:
+- Transaction errors fixed: database seeded, API routes support both Supabase and Prisma
+- Supabase URL configured; user needs to add NEXT_PUBLIC_SUPABASE_ANON_KEY and SUPABASE_SERVICE_ROLE_KEY to .env
+- Admin accessible via subdomain: admin-xxx.space-z.ai/login
+- E-Transaksi admin page added with full CRUD management
+- Admin login redesigned with modern dark theme
