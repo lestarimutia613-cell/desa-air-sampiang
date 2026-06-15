@@ -1,0 +1,521 @@
+     1→'use client';
+     2→
+     3→import { useState, useEffect } from 'react';
+     4→import { useRouter } from 'next/navigation';
+     5→import { useAppStore } from '@/lib/store';
+     6→import { Button } from '@/components/ui/button';
+     7→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+     8→import { Badge } from '@/components/ui/badge';
+     9→import {
+    10→  MapPin,
+    11→  Phone,
+    12→  Users,
+    13→  Target,
+    14→  Eye,
+    15→  Leaf,
+    16→  GraduationCap,
+    17→  ShoppingBag,
+    18→  MessageCircle,
+    19→  Landmark,
+    20→  Mountain,
+    21→  Droplets,
+    22→  Home,
+    23→  Building2,
+    24→  Sprout,
+    25→  TrendingUp,
+    26→  ArrowRight,
+    27→  Navigation,
+    28→  Layers,
+    29→} from 'lucide-react';
+    30→
+    31→export default function BerandaPage() {
+    32→  const router = useRouter();
+    33→  const { setChatOpen } = useAppStore();
+    34→  const [currentSlide, setCurrentSlide] = useState(0);
+    35→  const [mapFilter, setMapFilter] = useState('semua');
+    36→  const [activeMarker, setActiveMarker] = useState<string | null>(null);
+    37→
+    38→  const heroSlides = [
+    39→    {
+    40→      title: 'Desa Air Sempiang',
+    41→      subtitle: 'Kecamatan Kabawetan, Kabupaten Kepahiang, Provinsi Bengkulu',
+    42→      description: 'Website Desa Digital Terintegrasi sebagai Upaya Optimalisasi Layanan Pendidikan, Pemberdayaan UMKM dan Pertanian, serta Penguatan Program Desa Cantik',
+    43→    },
+    44→    {
+    45→      title: 'Program Desa Cantik',
+    46→      subtitle: 'Mewujudkan Desa yang Cantik, Sehat, dan Sejahtera',
+    47→      description: 'Penguatan program desa cantik melalui digitalisasi layanan, pemberdayaan masyarakat, dan pembangunan berkelanjutan',
+    48→    },
+    49→    {
+    50→      title: 'UMKM & Pertanian Digital',
+    51→      subtitle: 'Membangun Ekonomi Desa Melalui Teknologi',
+    52→      description: 'Pemberdayaan UMKM dan pertanian melalui marketplace digital, pelatihan, dan akses pasar yang lebih luas',
+    53→    },
+    54→  ];
+    55→
+    56→  useEffect(() => {
+    57→    const interval = setInterval(() => {
+    58→      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    59→    }, 5000);
+    60→    return () => clearInterval(interval);
+    61→  }, [heroSlides.length]);
+    62→
+    63→  const features = [
+    64→    { icon: <GraduationCap className="h-7 w-7" />, title: 'Pendidikan', desc: 'Corporate University & literasi digital', path: '/corporate-university' },
+    65→    { icon: <ShoppingBag className="h-7 w-7" />, title: 'Marketplace', desc: 'Jual beli produk UMKM & pertanian', path: '/marketplace' },
+    66→    { icon: <Leaf className="h-7 w-7" />, title: 'Pertanian', desc: 'Pemberdayaan petani & akses pasar', path: '/layanan' },
+    67→    { icon: <Users className="h-7 w-7" />, title: 'Kependudukan', desc: 'Administrasi & data monografi', path: '/kependudukan' },
+    68→    { icon: <MessageCircle className="h-7 w-7" />, title: 'AI Chatbot', desc: 'Asisten virtual seputar desa', action: 'chat' },
+    69→    { icon: <Landmark className="h-7 w-7" />, title: 'Layanan Desa', desc: 'Surat, izin & administrasi online', path: '/layanan' },
+    70→  ];
+    71→
+    72→  const topStats = [
+    73→    { label: 'Total Penduduk', value: '3.245', icon: <Users className="h-5 w-5" />, color: 'from-blue-500 to-blue-600' },
+    74→    { label: 'Kepala Keluarga', value: '856', icon: <Home className="h-5 w-5" />, color: 'from-emerald-500 to-emerald-600' },
+    75→    { label: 'UMKM Aktif', value: '42', icon: <Building2 className="h-5 w-5" />, color: 'from-orange-500 to-orange-600' },
+    76→    { label: 'Petani', value: '285', icon: <Sprout className="h-5 w-5" />, color: 'from-green-500 to-green-600' },
+    77→  ];
+    78→
+    79→  const mapMarkers = [
+    80→    { id: 'pusat', label: 'Kantor Desa', x: 50, y: 48, type: 'office', detail: 'Pusat pemerintahan desa' },
+    81→    { id: 'pasar', label: 'Pasar Desa', x: 65, y: 35, type: 'market', detail: 'Pusat ekonomi UMKM desa' },
+    82→    { id: 'sd', label: 'SDN Air Sempiang', x: 35, y: 40, type: 'education', detail: 'Sekolah Dasar Negeri' },
+    83→    { id: 'puskesmas', label: 'Puskesmas', x: 55, y: 60, type: 'health', detail: 'Pusat kesehatan masyarakat' },
+    84→    { id: 'pertanian', label: 'Kawasan Pertanian', x: 25, y: 65, type: 'farm', detail: 'Lahan pertanian produktif' },
+    85→    { id: 'perkebunan', label: 'Perkebunan Kopi', x: 75, y: 55, type: 'farm', detail: 'Perkebunan kopi robusta' },
+    86→  ];
+    87→
+    88→  const boundaryData = [
+    89→    { dir: 'Utara', border: 'Kab. Rejang Lebong', icon: <Mountain className="h-4 w-4" />, color: 'text-blue-600 bg-blue-50' },
+    90→    { dir: 'Selatan', border: 'Kec. Tebat Karai', icon: <Mountain className="h-4 w-4" />, color: 'text-amber-600 bg-amber-50' },
+    91→    { dir: 'Barat', border: 'Kec. Ujan Mas', icon: <Droplets className="h-4 w-4" />, color: 'text-cyan-600 bg-cyan-50' },
+    92→    { dir: 'Timur', border: 'Kec. Muara Kemumu', icon: <Navigation className="h-4 w-4" />, color: 'text-purple-600 bg-purple-50' },
+    93→  ];
+    94→
+    95→  return (
+    96→    <div>
+    97→      {/* ========================================
+    98→          HERO SECTION - Full viewport with layering
+    99→          ======================================== */}
+   100→      <section id="section-hero" className="relative overflow-hidden bg-gradient-to-br from-emerald-800 via-emerald-900 to-teal-950">
+   101→        {/* Animated background pattern */}
+   102→        <div className="absolute inset-0 opacity-10">
+   103→          <div className="absolute top-0 left-0 w-96 h-96 bg-emerald-400 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+   104→          <div className="absolute bottom-0 right-0 w-80 h-80 bg-teal-400 rounded-full blur-3xl translate-x-1/3 translate-y-1/3" />
+   105→          <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-green-400 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+   106→        </div>
+   107→
+   108→        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-28">
+   109→          <div className="max-w-3xl">
+   110→            <Badge className="bg-white/15 text-emerald-100 border border-white/20 mb-4 backdrop-blur-sm">
+   111→              <Layers className="h-3 w-3 mr-1" /> Program Desa Cantik 2024
+   112→            </Badge>
+   113→            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight tracking-tight">
+   114→              {heroSlides[currentSlide].title}
+   115→            </h1>
+   116→            <p className="text-emerald-200 text-lg sm:text-xl mb-2 font-medium">
+   117→              {heroSlides[currentSlide].subtitle}
+   118→            </p>
+   119→            <p className="text-emerald-100/70 text-base mb-8 max-w-2xl leading-relaxed">
+   120→              {heroSlides[currentSlide].description}
+   121→            </p>
+   122→            <div className="flex flex-wrap gap-3">
+   123→              <Button
+   124→                size="lg"
+   125→                className="bg-white text-emerald-800 hover:bg-emerald-50 shadow-lg shadow-emerald-900/50 font-semibold"
+   126→                onClick={() => router.push('/marketplace')}
+   127→              >
+   128→                <ShoppingBag className="mr-2 h-5 w-5" />
+   129→                Marketplace Desa
+   130→              </Button>
+   131→              <Button
+   132→                size="lg"
+   133→                variant="outline"
+   134→                className="border-white/25 text-white hover:bg-white/10 backdrop-blur-sm"
+   135→                onClick={() => setChatOpen(true)}
+   136→              >
+   137→                <MessageCircle className="mr-2 h-5 w-5" />
+   138→                Chat AI
+   139→              </Button>
+   140→            </div>
+   141→            {/* Slide indicators */}
+   142→            <div className="flex gap-2 mt-8">
+   143→              {heroSlides.map((_, i) => (
+   144→                <button
+   145→                  key={i}
+   146→                  onClick={() => setCurrentSlide(i)}
+   147→                  className={`h-1.5 rounded-full transition-all duration-500 ${
+   148→                    i === currentSlide ? 'w-10 bg-white' : 'w-3 bg-white/30 hover:bg-white/50'
+   149→                  }`}
+   150→                />
+   151→              ))}
+   152→            </div>
+   153→          </div>
+   154→        </div>
+   155→      </section>
+   156→
+   157→      {/* ========================================
+   158→          TOP STATS - Overlapping hero (layering effect)
+   159→          ======================================== */}
+   160→      <section id="section-stats" className="relative -mt-14 z-10 px-4 sm:px-6 lg:px-8">
+   161→        <div className="max-w-7xl mx-auto">
+   162→          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+   163→            {topStats.map((stat, i) => (
+   164→              <Card key={i} className="border-0 shadow-xl hover:shadow-2xl transition-all bg-white/95 backdrop-blur-sm group">
+   165→                <CardContent className="p-4 sm:p-5">
+   166→                  <div className="flex items-center gap-3">
+   167→                    <div className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${stat.color} text-white rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+   168→                      {stat.icon}
+   169→                    </div>
+   170→                    <div>
+   171→                      <p className="text-xl sm:text-2xl font-bold text-gray-900">{stat.value}</p>
+   172→                      <p className="text-xs sm:text-sm text-gray-500">{stat.label}</p>
+   173→                    </div>
+   174→                  </div>
+   175→                </CardContent>
+   176→              </Card>
+   177→            ))}
+   178→          </div>
+   179→        </div>
+   180→      </section>
+   181→
+   182→      {/* ========================================
+   183→          LAYANAN DESA DIGITAL - Compact feature grid
+   184→          ======================================== */}
+   185→      <section id="section-layanan" className="py-12">
+   186→        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   187→          <div className="flex items-center justify-between mb-6">
+   188→            <div>
+   189→              <h2 className="text-xl sm:text-2xl font-bold text-emerald-900">Layanan Desa Digital</h2>
+   190→              <p className="text-sm text-gray-500">Akses layanan desa secara digital</p>
+   191→            </div>
+   192→            <Button variant="ghost" className="text-emerald-600 hover:text-emerald-800 text-sm" onClick={() => router.push('/layanan')}>
+   193→              Lihat Semua <ArrowRight className="h-4 w-4 ml-1" />
+   194→            </Button>
+   195→          </div>
+   196→          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+   197→            {features.map((f, i) => (
+   198→              <Card
+   199→                key={i}
+   200→                className="group cursor-pointer hover:shadow-lg transition-all border-emerald-50 hover:border-emerald-200 hover:-translate-y-1"
+   201→                onClick={() => f.action === 'chat' ? setChatOpen(true) : f.path && router.push(f.path)}
+   202→              >
+   203→                <CardContent className="p-4 text-center">
+   204→                  <div className="w-12 h-12 bg-emerald-50 text-emerald-700 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:bg-emerald-700 group-hover:text-white transition-colors shadow-sm">
+   205→                    {f.icon}
+   206→                  </div>
+   207→                  <h3 className="font-bold text-emerald-900 text-sm mb-1">{f.title}</h3>
+   208→                  <p className="text-xs text-gray-500 leading-snug">{f.desc}</p>
+   209→                </CardContent>
+   210→              </Card>
+   211→            ))}
+   212→          </div>
+   213→        </div>
+   214→      </section>
+   215→
+   216→      {/* ========================================
+   217→          PETA WILAYAH - Like simkopdes.go.id
+   218→          ======================================== */}
+   219→      <section id="section-peta" className="py-10 bg-gradient-to-b from-gray-50 to-white">
+   220→        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   221→          <div className="flex items-center justify-between mb-4">
+   222→            <div>
+   223→              <h2 className="text-xl sm:text-2xl font-bold text-emerald-900">Peta Wilayah Desa</h2>
+   224→              <p className="text-sm text-gray-500">3°33&apos;28.8&quot; LS, 102°36&apos;7.2&quot; BT</p>
+   225→            </div>
+   226→            <div className="flex items-center gap-2">
+   227→              <select
+   228→                value={mapFilter}
+   229→                onChange={(e) => setMapFilter(e.target.value)}
+   230→                className="text-xs border border-emerald-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-emerald-400"
+   231→              >
+   232→                <option value="semua">Semua Lokasi</option>
+   233→                <option value="office">Kantor & Layanan</option>
+   234→                <option value="education">Pendidikan</option>
+   235→                <option value="health">Kesehatan</option>
+   236→                <option value="market">Ekonomi</option>
+   237→                <option value="farm">Pertanian</option>
+   238→              </select>
+   239→            </div>
+   240→          </div>
+   241→
+   242→          <Card className="border-0 shadow-xl overflow-hidden">
+   243→            <div className="relative">
+   244→              {/* Map Container */}
+   245→              <div className="relative w-full bg-gradient-to-br from-teal-800 via-emerald-900 to-green-900 overflow-hidden" style={{ minHeight: '420px' }}>
+   246→                {/* Topographic pattern overlay */}
+   247→                <svg className="absolute inset-0 w-full h-full opacity-15" viewBox="0 0 800 420">
+   248→                  {/* Contour lines */}
+   249→                  <ellipse cx="400" cy="210" rx="300" ry="160" fill="none" stroke="white" strokeWidth="0.5" />
+   250→                  <ellipse cx="400" cy="210" rx="240" ry="130" fill="none" stroke="white" strokeWidth="0.5" />
+   251→                  <ellipse cx="400" cy="210" rx="180" ry="100" fill="none" stroke="white" strokeWidth="0.5" />
+   252→                  <ellipse cx="400" cy="210" rx="120" ry="70" fill="none" stroke="white" strokeWidth="0.5" />
+   253→                  {/* Rivers */}
+   254→                  <path d="M 0 300 Q 200 280 350 320 Q 500 360 650 300 Q 750 270 800 290" fill="none" stroke="rgba(56,189,248,0.4)" strokeWidth="2" />
+   255→                  <path d="M 300 0 Q 320 100 310 200 Q 300 300 350 420" fill="none" stroke="rgba(56,189,248,0.3)" strokeWidth="1.5" />
+   256→                  {/* Roads */}
+   257→                  <path d="M 0 180 Q 200 200 400 190 Q 600 180 800 200" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" strokeDasharray="6 4" />
+   258→                  <path d="M 400 0 Q 390 150 400 210 Q 410 300 400 420" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1" strokeDasharray="4 4" />
+   259→                </svg>
+   260→
+   261→                {/* Village boundary polygon */}
+   262→                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+   263→                  <polygon
+   264→                    points="30,20 70,15 80,40 75,70 55,85 25,75 15,45"
+   265→                    fill="rgba(16,185,129,0.2)"
+   266→                    stroke="rgba(255,255,255,0.6)"
+   267→                    strokeWidth="0.3"
+   268→                    strokeDasharray="1.5 1"
+   269→                  />
+   270→                </svg>
+   271→
+   272→                {/* Boundary labels */}
+   273→                <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-blue-900/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium border border-blue-400/30 flex items-center gap-1">
+   274→                  <Navigation className="h-3 w-3" /> Utara: Kab. Rejang Lebong
+   275→                </div>
+   276→                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-amber-900/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium border border-amber-400/30 flex items-center gap-1">
+   277→                  <Mountain className="h-3 w-3" /> Selatan: Kec. Tebat Karai
+   278→                </div>
+   279→                <div className="absolute left-3 top-1/2 -translate-y-1/2 -rotate-90 bg-cyan-900/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium border border-cyan-400/30 flex items-center gap-1">
+   280→                  <Droplets className="h-3 w-3" /> Barat: Kec. Ujan Mas
+   281→                </div>
+   282→                <div className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 bg-purple-900/60 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium border border-purple-400/30 flex items-center gap-1">
+   283→                  <Navigation className="h-3 w-3" /> Timur: Kec. Muara Kemumu
+   284→                </div>
+   285→
+   286→                {/* Map markers */}
+   287→                {mapMarkers
+   288→                  .filter((m) => mapFilter === 'semua' || m.type === mapFilter)
+   289→                  .map((marker) => (
+   290→                    <button
+   291→                      key={marker.id}
+   292→                      onClick={() => setActiveMarker(activeMarker === marker.id ? null : marker.id)}
+   293→                      className="absolute z-10 group/marker"
+   294→                      style={{ left: `${marker.x}%`, top: `${marker.y}%`, transform: 'translate(-50%, -50%)' }}
+   295→                    >
+   296→                      <div className={`relative flex items-center justify-center transition-transform ${
+   297→                        activeMarker === marker.id ? 'scale-125' : 'hover:scale-110'
+   298→                      }`}>
+   299→                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shadow-lg border-2 border-white ${
+   300→                          marker.type === 'office' ? 'bg-red-500' :
+   301→                          marker.type === 'market' ? 'bg-orange-500' :
+   302→                          marker.type === 'education' ? 'bg-blue-500' :
+   303→                          marker.type === 'health' ? 'bg-pink-500' :
+   304→                          'bg-green-500'
+   305→                        }`}>
+   306→                          {marker.type === 'office' ? <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-white" /> :
+   307→                           marker.type === 'market' ? <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5 text-white" /> :
+   308→                           marker.type === 'education' ? <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5 text-white" /> :
+   309→                           marker.type === 'health' ? <span className="text-white text-xs font-bold">+</span> :
+   310→                           <Sprout className="h-4 w-4 sm:h-5 sm:w-5 text-white" />}
+   311→                        </div>
+   312→                        <span className="absolute -bottom-6 whitespace-nowrap text-[10px] sm:text-xs font-medium text-white bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full">
+   313→                          {marker.label}
+   314→                        </span>
+   315→                        {/* Pulse animation */}
+   316→                        <div className={`absolute inset-0 rounded-full animate-ping opacity-30 ${
+   317→                          marker.type === 'office' ? 'bg-red-400' :
+   318→                          marker.type === 'market' ? 'bg-orange-400' :
+   319→                          marker.type === 'education' ? 'bg-blue-400' :
+   320→                          marker.type === 'health' ? 'bg-pink-400' :
+   321→                          'bg-green-400'
+   322→                        }`} style={{ animationDuration: '2s' }} />
+   323→                      </div>
+   324→                      {/* Popup on click */}
+   325→                      {activeMarker === marker.id && (
+   326→                        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-white rounded-xl shadow-2xl p-3 min-w-[200px] z-20 border border-emerald-100">
+   327→                          <p className="font-bold text-emerald-900 text-sm mb-1">{marker.label}</p>
+   328→                          <p className="text-xs text-gray-600">{marker.detail}</p>
+   329→                          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-r border-b border-emerald-100 rotate-45" />
+   330→                        </div>
+   331→                      )}
+   332→                    </button>
+   333→                  ))}
+   334→
+   335→                {/* Legend */}
+   336→                <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-md rounded-xl p-3 border border-white/10">
+   337→                  <p className="text-white/70 text-[10px] font-semibold mb-2 uppercase tracking-wider">Legenda</p>
+   338→                  <div className="space-y-1.5">
+   339→                    {[
+   340→                      { label: 'Kantor Desa', color: 'bg-red-500', type: 'office' },
+   341→                      { label: 'Pasar/Ekonomi', color: 'bg-orange-500', type: 'market' },
+   342→                      { label: 'Pendidikan', color: 'bg-blue-500', type: 'education' },
+   343→                      { label: 'Kesehatan', color: 'bg-pink-500', type: 'health' },
+   344→                      { label: 'Pertanian', color: 'bg-green-500', type: 'farm' },
+   345→                    ].map((l, i) => (
+   346→                      <button
+   347→                        key={i}
+   348→                        onClick={() => setMapFilter(mapFilter === l.type ? 'semua' : l.type)}
+   349→                        className={`flex items-center gap-2 text-[10px] transition-all ${
+   350→                          mapFilter === l.type ? 'text-white' : 'text-white/60 hover:text-white/90'
+   351→                        }`}
+   352→                      >
+   353→                        <span className={`w-2.5 h-2.5 rounded-full ${l.color} ${mapFilter === l.type ? 'ring-2 ring-white' : ''}`} />
+   354→                        {l.label}
+   355→                      </button>
+   356→                    ))}
+   357→                  </div>
+   358→                </div>
+   359→
+   360→                {/* Zoom controls */}
+   361→                <div className="absolute top-3 left-3 flex flex-col gap-1">
+   362→                  <button className="w-8 h-8 bg-black/40 backdrop-blur-sm text-white rounded-lg flex items-center justify-center hover:bg-black/60 text-lg font-bold">+</button>
+   363→                  <button className="w-8 h-8 bg-black/40 backdrop-blur-sm text-white rounded-lg flex items-center justify-center hover:bg-black/60 text-lg font-bold">-</button>
+   364→                </div>
+   365→              </div>
+   366→            </div>
+   367→
+   368→            {/* Map bottom info bar */}
+   369→            <div className="bg-gradient-to-r from-emerald-700 to-emerald-800 px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-white text-xs">
+   370→              <div className="flex items-center gap-4">
+   371→                <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> Desa Air Sempiang</span>
+   372→                <span className="hidden sm:inline text-emerald-200">|</span>
+   373→                <span className="hidden sm:inline">Kec. Kabawetan, Kab. Kepahiang</span>
+   374→              </div>
+   375→              <div className="flex items-center gap-3">
+   376→                <span className="text-emerald-200">Luas: ~12.5 km²</span>
+   377→                <span className="text-emerald-200">|</span>
+   378→                <span>Ketinggian: 800-1.200 mdpl</span>
+   379→              </div>
+   380→            </div>
+   381→          </Card>
+   382→
+   383→          {/* Boundary detail cards row */}
+   384→          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+   385→            {boundaryData.map((b, i) => (
+   386→              <div key={i} className={`flex items-center gap-2 p-3 rounded-xl ${b.color} border border-gray-100`}>
+   387→                <span className="shrink-0">{b.icon}</span>
+   388→                <div>
+   389→                  <p className="text-[10px] text-gray-500 uppercase font-semibold tracking-wider">{b.dir}</p>
+   390→                  <p className="text-xs font-bold text-gray-800">{b.border}</p>
+   391→                </div>
+   392→              </div>
+   393→            ))}
+   394→          </div>
+   395→        </div>
+   396→      </section>
+   397→
+   398→      {/* ========================================
+   399→          PROFIL DESA & VISI MISI - Side by side, compact
+   400→          ======================================== */}
+   401→      <section id="section-profil" className="py-10">
+   402→        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   403→          <div className="grid lg:grid-cols-5 gap-6">
+   404→            {/* Profil Desa */}
+   405→            <div className="lg:col-span-3">
+   406→              <Card className="h-full border-0 shadow-lg overflow-hidden">
+   407→                <div className="bg-gradient-to-r from-emerald-700 to-emerald-800 px-6 py-4">
+   408→                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
+   409→                    <MapPin className="h-5 w-5" /> Profil Desa Air Sempiang
+   410→                  </h2>
+   411→                </div>
+   412→                <CardContent className="p-6">
+   413→                  <div className="space-y-3 text-sm text-gray-700 leading-relaxed">
+   414→                    <p>
+   415→                      Desa Air Sempiang terletak di Kecamatan Kabawetan, Kabupaten Kepahiang, Provinsi Bengkulu. 
+   416→                      Desa ini berada di koordinat astronomis <span className="font-mono bg-emerald-50 text-emerald-800 px-1.5 py-0.5 rounded text-xs">3°33&apos;28.8&quot; LS, 102°36&apos;7.2&quot; BT</span>, 
+   417→                      menjadikannya sebagai salah satu desa strategis di wilayah Kepahiang yang memiliki potensi alam dan 
+   418→                      sumber daya manusia yang melimpah.
+   419→                    </p>
+   420→                    <p>
+   421→                      Dengan jumlah penduduk sekitar 3.245 jiwa dalam 856 kepala keluarga, Desa Air Sempiang terus berupaya meningkatkan 
+   422→                      kualitas pelayanan publik melalui digitalisasi dan pemberdayaan masyarakat. Program Desa Cantik 
+   423→                      menjadi landasan utama dalam pembangunan desa yang berkelanjutan.
+   424→                    </p>
+   425→                    <p>
+   426→                      Wilayah desa yang dikelilingi perbukitan dan pertanian hijau menjadikan Air Sempiang kaya akan 
+   427→                      produk pertanian seperti kopi robusta, beras organik, dan rempah-rempah.
+   428→                    </p>
+   429→                  </div>
+   430→                </CardContent>
+   431→              </Card>
+   432→            </div>
+   433→
+   434→            {/* Visi & Misi */}
+   435→            <div className="lg:col-span-2 space-y-4">
+   436→              <Card className="border-0 shadow-lg">
+   437→                <div className="bg-gradient-to-r from-teal-600 to-teal-700 px-6 py-3">
+   438→                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+   439→                    <Eye className="h-4 w-4" /> Visi
+   440→                  </h3>
+   441→                </div>
+   442→                <CardContent className="p-5">
+   443→                  <p className="text-sm text-gray-700 leading-relaxed italic">
+   444→                    &quot;Mewujudkan Desa Air Sempiang yang Maju, Mandiri, dan Sejahtera melalui 
+   445→                    Pemanfaatan Teknologi Digital, Pemberdayaan Masyarakat, dan Pembangunan Berkelanjutan 
+   446→                    dalam Rangka Program Desa Cantik&quot;
+   447→                  </p>
+   448→                </CardContent>
+   449→              </Card>
+   450→              <Card className="border-0 shadow-lg">
+   451→                <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 px-6 py-3">
+   452→                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+   453→                    <Target className="h-4 w-4" /> Misi
+   454→                  </h3>
+   455→                </div>
+   456→                <CardContent className="p-5">
+   457→                  <ol className="space-y-2">
+   458→                    {[
+   459→                      'Meningkatkan pelayanan publik melalui digitalisasi & sistem informasi desa terintegrasi.',
+   460→                      'Memberdayakan UMKM & pertanian melalui teknologi, permodalan, & pemasaran digital.',
+   461→                      'Mengembangkan SDM melalui pendidikan, pelatihan, & literasi digital.',
+   462→                      'Melestarikan lingkungan & kearifan lokal melalui penghijauan berbasis masyarakat.',
+   463→                      'Membangun infrastruktur desa berkualitas & ramah lingkungan.',
+   464→                      'Meningkatkan partisipasi masyarakat dalam perencanaan pembangunan desa.',
+   465→                    ].map((m, i) => (
+   466→                      <li key={i} className="flex gap-2 text-sm">
+   467→                        <span className="shrink-0 w-5 h-5 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center text-[10px] font-bold">
+   468→                          {i + 1}
+   469→                        </span>
+   470→                        <span className="text-gray-700 leading-snug">{m}</span>
+   471→                      </li>
+   472→                    ))}
+   473→                  </ol>
+   474→                </CardContent>
+   475→              </Card>
+   476→            </div>
+   477→          </div>
+   478→        </div>
+   479→      </section>
+   480→
+   481→      {/* ========================================
+   482→          KONTAK DESA - Compact row
+   483→          ======================================== */}
+   484→      <section id="section-kontak" className="py-10 bg-gradient-to-b from-emerald-50 to-white">
+   485→        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   486→          <h2 className="text-xl sm:text-2xl font-bold text-emerald-900 mb-6">Hubungi Kami</h2>
+   487→          <div className="grid sm:grid-cols-3 gap-4">
+   488→            {[
+   489→              { icon: <Phone className="h-6 w-6" />, title: 'Telepon', value: '085150859735', bg: 'bg-emerald-100 text-emerald-700' },
+   490→              { icon: <MapPin className="h-6 w-6" />, title: 'Alamat', value: 'Kantor Desa Air Sempiang, Kec. Kabawetan, Kab. Kepahiang', bg: 'bg-emerald-100 text-emerald-700' },
+   491→              {
+   492→                icon: <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>,
+   493→                title: 'WhatsApp',
+   494→                value: 'Chat Sekarang',
+   495→                bg: 'bg-green-100 text-green-700',
+   496→                href: 'https://wa.me/6285150859735',
+   497→              },
+   498→            ].map((item, i) => (
+   499→              <Card key={i} className="hover:shadow-lg transition-shadow border-0 shadow-md">
+   500→                <CardContent className="p-5 flex items-center gap-4">
+   501→                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${item.bg} shrink-0`}>
+   502→                    {item.icon}
+   503→                  </div>
+   504→                  <div>
+   505→                    <p className="font-bold text-emerald-900 text-sm">{item.title}</p>
+   506→                    {item.href ? (
+   507→                      <a href={item.href} target="_blank" rel="noopener noreferrer" className="text-sm text-green-600 hover:underline">{item.value}</a>
+   508→                    ) : (
+   509→                      <p className="text-sm text-gray-600">{item.value}</p>
+   510→                    )}
+   511→                  </div>
+   512→                </CardContent>
+   513→              </Card>
+   514→            ))}
+   515→          </div>
+   516→        </div>
+   517→      </section>
+   518→    </div>
+   519→  );
+   520→}
+   521→
