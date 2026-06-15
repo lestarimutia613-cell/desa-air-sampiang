@@ -32,7 +32,7 @@
     32→    32→  const router = useRouter();
     33→    33→  const { setChatOpen } = useAppStore();
     34→    34→  const [currentSlide, setCurrentSlide] = useState(0);
-    35→    35→  const apFilter, setMapFilter] = useState('semua');
+    35→    35→  const [mapFilter, setMapFilter] = useState('semua');
     36→    36→  const [activeMarker, setActiveMarker] = useState<string | null>(null);
     37→    37→
     38→    38→  const heroSlides = [
@@ -58,7 +58,7 @@
     58→    58→      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
     59→    59→    }, 5000);
     60→    60→    return () => clearInterval(interval);
-    61→    61→  }, eroSlides.length]);
+    61→    61→  }, [heroSlides.length]);
     62→    62→
     63→    63→  const features = [
     64→    64→    { icon: <GraduationCap className="h-7 w-7" />, title: 'Pendidikan', desc: 'Corporate University & literasi digital', path: '/corporate-university' },
@@ -518,3 +518,4 @@
    518→   518→    </div>
    519→   519→  );
    520→   520→}
+   521→   521→

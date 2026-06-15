@@ -97,7 +97,7 @@ export default function BerandaPage() {
       {/* ========================================
           HERO SECTION - Full viewport with layering
           ======================================== */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-emerald-800 via-emerald-900 to-teal-950">
+      <section id="section-hero" className="relative overflow-hidden bg-gradient-to-br from-emerald-800 via-emerald-900 to-teal-950">
         {/* Animated background pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 left-0 w-96 h-96 bg-emerald-400 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
@@ -157,7 +157,7 @@ export default function BerandaPage() {
       {/* ========================================
           TOP STATS - Overlapping hero (layering effect)
           ======================================== */}
-      <section className="relative -mt-14 z-10 px-4 sm:px-6 lg:px-8">
+      <section id="section-stats" className="relative -mt-14 z-10 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {topStats.map((stat, i) => (
@@ -182,7 +182,7 @@ export default function BerandaPage() {
       {/* ========================================
           LAYANAN DESA DIGITAL - Compact feature grid
           ======================================== */}
-      <section className="py-12">
+      <section id="section-layanan" className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -216,7 +216,7 @@ export default function BerandaPage() {
       {/* ========================================
           PETA WILAYAH - Like simkopdes.go.id
           ======================================== */}
-      <section className="py-10 bg-gradient-to-b from-gray-50 to-white">
+      <section id="section-peta" className="py-10 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -398,7 +398,7 @@ export default function BerandaPage() {
       {/* ========================================
           PROFIL DESA & VISI MISI - Side by side, compact
           ======================================== */}
-      <section className="py-10">
+      <section id="section-profil" className="py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-5 gap-6">
             {/* Profil Desa */}
@@ -481,7 +481,7 @@ export default function BerandaPage() {
       {/* ========================================
           KONTAK DESA - Compact row
           ======================================== */}
-      <section className="py-10 bg-gradient-to-b from-emerald-50 to-white">
+      <section id="section-kontak" className="py-10 bg-gradient-to-b from-emerald-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-xl sm:text-2xl font-bold text-emerald-900 mb-6">Hubungi Kami</h2>
           <div className="grid sm:grid-cols-3 gap-4">
